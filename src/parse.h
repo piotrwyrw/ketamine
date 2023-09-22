@@ -5,6 +5,8 @@
 #ifndef WEBSERVER_PARSE_H
 #define WEBSERVER_PARSE_H
 
-char *parse_request(char *req);
+#include "server.h"
+
+char *parse_request(char *req, client_handle *handle);
 
 #endif //WEBSERVER_PARSE_H

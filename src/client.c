@@ -27,7 +27,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         }
 #endif
 
-        char *file = parse_request(req);
+        char *file = parse_request(req, handle);
 
         if (!file) {
                 CONNECTION_ERROR(handle, "Could not parse incoming request\n");
