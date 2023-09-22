@@ -1,10 +1,10 @@
 #include "server.h"
 #include "routing.h"
+#include "cfgroute.h"
 
 int main(void)
 {
-        route("/", "home.html");
-        route("/contact", "contact.html");
+        load_routes_file(ROUTES_FILE_NAME);
         run_server();
         return 0;
 }

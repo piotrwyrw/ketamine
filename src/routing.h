@@ -22,6 +22,8 @@ extern unsigned long route_count;
 
 _Bool route(char *src, char *target);
 
+char *resolve_route_raw(char *src);
+
 char *resolve_route(char *src);
 
 #endif //WEBSERVER_ROUTING_H

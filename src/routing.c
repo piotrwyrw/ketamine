@@ -4,16 +4,26 @@
 
 #include "routing.h"
 #include "settings.h"
+#include "defs.h"
 
 #include <string.h>
-#include <math.h>
+#include <stdio.h>
 
 route_entry routes[MAX_ROUTES];
 unsigned long route_count = 0;
 
 _Bool route(char *src, char *target)
 {
+        if (!src || !target) {
+                return false;
+        }
+
         if (route_count >= MAX_ROUTES) {
+                return false;
+        }
+
+        if (resolve_route_raw(src)) {
+                ERROR_LOG("Attempted to add conflicting route for \"%s\": \"%s\"\n", src, target)
                 return false;
         }
 
@@ -28,7 +38,7 @@ _Bool route(char *src, char *target)
         return true;
 }
 
-char *resolve_route(char *src)
+char *resolve_route_raw(char *src)
 {
         size_t src_len = strnlen(src, MAX_STRING_LENGTH);
 
@@ -47,5 +57,14 @@ char *resolve_route(char *src)
                 return routes[i].target;
         }
 
+        return NULL;
+}
+
+char *resolve_route(char *src)
+{
+        char *target = resolve_route_raw(src);
+        if (target) {
+                return target;
+        }
         return DEFAULT_ROUTE;
 }

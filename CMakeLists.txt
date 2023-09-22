@@ -15,4 +15,6 @@ add_executable(server src/main.c
         src/client.h
         src/client.c
         src/routing.c
+        src/cfgroute.h
+        src/cfgroute.c
 )

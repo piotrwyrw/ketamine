@@ -36,6 +36,7 @@ int read_file_to(char *path, char **buffer, unsigned long *length)
         }
 
         if (fread(*buffer, sizeof(char), len, f) == 0) {
+                free(*buffer);
                 return -1;
         }
 

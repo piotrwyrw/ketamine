@@ -8,6 +8,7 @@
 #define WITH_DEBUG_FEATURES
 
 #define INDEX_FILE_NAME "index.html"
+#define ROUTES_FILE_NAME "routes"
 #define LISTEN_PORT 80
 #define MAX_STRING_LENGTH 100
 
