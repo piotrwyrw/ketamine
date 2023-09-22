@@ -4,6 +4,7 @@
 
 #include "fio.h"
 #include "global.h"
+#include "defs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,6 +26,11 @@ int read_file(char *path)
         rewind(f);
 
         file_buffer = calloc(len + 1, sizeof(char));
+
+        if (!file_buffer) {
+                ERROR_LOG("Failed to allocate file buffer.\n")
+                return -1;
+        }
 
         if (fread(file_buffer, sizeof(char), len, f) == 0) {
                 return -1;

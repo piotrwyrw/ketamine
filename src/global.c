@@ -6,7 +6,8 @@
 
 #include "global.h"
 
-unsigned int indent = 0;
+unsigned long running_threads = 0;
+
 char *file_buffer = NULL;
 unsigned long file_size = 0;
 _Bool running = true;

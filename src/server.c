@@ -20,7 +20,7 @@
 #include <pthread.h>
 #include <fcntl.h>
 
-const char *http_not_found = "HTTP/1.1 404 KETAMINE-NOT-FOUND\r\nConnection: Closed\r\n\r\n";
+const char *http_not_found = "HTTP/1.1 404 NOT-FOUND\r\nConnection: Closed\r\n\r\n";
 
 int server_sockd;
 int connection_ids = 0;
@@ -92,13 +92,17 @@ int run_server()
         INFO_LOG("Server is UP AND RUNNING on http://localhost:%d\n\n", LISTEN_PORT)
 
         while (true) {
+
+                if (!running) {
+                        INFO_LOG("---- Server shutdown requested. Waiting for all threads to terminate ----\n")
+                        while (running_threads > 0) {}
+                        goto return_all;
+                }
+
                 status = accept(server_sockd, (struct sockaddr *) &in_addr, &addr_len);
 
                 if (status < 0) {
                         if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                                if (!running) {
-                                        break;
-                                }
                                 continue;
                         }
                 }
@@ -116,13 +120,15 @@ int run_server()
                 server_connection *conn = new_connection(status, in_addr, addr_len);
 
                 if (!conn) {
-                        ERROR_LOG("Failed to allocate a connection structure")
+                        ERROR_LOG("Failed to allocate a connection structure\n")
 
                         status = close(client_socket);
                         HANDLE_ERRORS("close", status)
 
                         return -1;
                 }
+
+                running_threads++;
 
                 // Handle this client in an async thread
                 pthread_t thread;
@@ -131,6 +137,9 @@ int run_server()
 
                 connection_ids++;
         }
+
+        return_all:
+        INFO_LOG("Server shutting down ...\n");
 
         return 0;
 }

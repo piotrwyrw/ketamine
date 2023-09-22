@@ -7,7 +7,8 @@
 
 #include <stdbool.h>
 
-extern unsigned int indent;
+extern unsigned long running_threads;
+
 extern char *file_buffer;
 extern unsigned long file_size;
 extern _Bool running;
