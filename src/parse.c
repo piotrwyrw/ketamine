@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+// Parse a HTTP 'GET' request
 char *parse_request(char *req)
 {
         if (strlen(req) == 0) {
@@ -33,14 +34,6 @@ char *parse_request(char *req)
 
         if (file == NULL) {
                 return NULL;
-        }
-
-        if (strcmp(file, "/") == 0) {
-                return INDEX_FILE_NAME;
-        }
-
-        if (file[0] == '/' && strlen(file) > 1) {
-                file++;
         }
 
         return file;

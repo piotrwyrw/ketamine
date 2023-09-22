@@ -5,15 +5,14 @@
 #ifndef WEBSERVER_DEFS_H
 #define WEBSERVER_DEFS_H
 
-#define HANDLE(tag, err) \
+#define HANDLE_ERRORS(tag, err) \
         if (err < 0) {   \
-                padding(indent); \
-                printf("(Error : %s): %s\n", tag, strerror(errno));            \
+                printf("[Error(%s)]: %s\n", tag, strerror(errno));            \
                 return -1; \
         }
 
-#define SRVLOG(...) \
-        padding(indent); \
+#define CONNECTION_LOG(conn, ...) \
+        printf("[%s | %d] ", conn->ip_addr, conn->conn_id);                      \
         printf(__VA_ARGS__);
 
 #define LOG(...) \
