@@ -2,8 +2,8 @@
 // Created by Piotr Krzysztof Wyrwas on 19.09.23.
 //
 
-#ifndef WEBSERVER_SETTINGS_H
-#define WEBSERVER_SETTINGS_H
+#ifndef KETAMINE_SETTINGS_H
+#define KETAMINE_SETTINGS_H
 
 #define WITH_DEBUG_FEATURES
 
@@ -12,4 +12,4 @@
 #define LISTEN_PORT 80
 #define MAX_STRING_LENGTH 100
 
-#endif //WEBSERVER_SETTINGS_H
+#endif //KETAMINE_SETTINGS_H

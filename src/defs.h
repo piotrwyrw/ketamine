@@ -2,8 +2,8 @@
 // Created by Piotr Krzysztof Wyrwas on 19.09.23.
 //
 
-#ifndef WEBSERVER_DEFS_H
-#define WEBSERVER_DEFS_H
+#ifndef KETAMINE_DEFS_H
+#define KETAMINE_DEFS_H
 
 #define HANDLE_ERRORS(tag, err) \
         if (err < 0) {   \
@@ -27,4 +27,4 @@
         printf("[ERR] "); \
         printf(__VA_ARGS__);
 
-#endif //WEBSERVER_DEFS_H
+#endif //KETAMINE_DEFS_H

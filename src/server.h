@@ -2,8 +2,8 @@
 // Created by Piotr Krzysztof Wyrwas on 19.09.23.
 //
 
-#ifndef WEBSERVER_SERVER_H
-#define WEBSERVER_SERVER_H
+#ifndef KETAMINE_SERVER_H
+#define KETAMINE_SERVER_H
 
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -32,4 +32,4 @@ void free_connection(client_handle *conn);
 
 int run_server();
 
-#endif //WEBSERVER_SERVER_H
+#endif //KETAMINE_SERVER_H

@@ -2,8 +2,8 @@
 // Created by Piotr Krzysztof Wyrwas on 20.09.23.
 //
 
-#ifndef WEBSERVER_ROUTING_H
-#define WEBSERVER_ROUTING_H
+#ifndef KETAMINE_ROUTING_H
+#define KETAMINE_ROUTING_H
 
 #include <stdbool.h>
 
@@ -26,4 +26,4 @@ char *resolve_route_raw(char *src);
 
 char *resolve_route(char *src);
 
-#endif //WEBSERVER_ROUTING_H
+#endif //KETAMINE_ROUTING_H

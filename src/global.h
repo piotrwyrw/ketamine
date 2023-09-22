@@ -2,8 +2,8 @@
 // Created by Piotr Krzysztof Wyrwas on 19.09.23.
 //
 
-#ifndef WEBSERVER_GLOBAL_H
-#define WEBSERVER_GLOBAL_H
+#ifndef KETAMINE_GLOBAL_H
+#define KETAMINE_GLOBAL_H
 
 #include <stdbool.h>
 
@@ -12,4 +12,4 @@ extern _Bool running;
 
 extern const char *banner;
 
-#endif //WEBSERVER_GLOBAL_H
+#endif //KETAMINE_GLOBAL_H

@@ -2,8 +2,8 @@
 // Created by Piotr Krzysztof Wyrwas on 21.09.23.
 //
 
-#ifndef WEBSERVER_CLIENT_H
-#define WEBSERVER_CLIENT_H
+#ifndef KETAMINE_CLIENT_H
+#define KETAMINE_CLIENT_H
 
 typedef enum {
         GET_OK,
@@ -16,4 +16,4 @@ typedef enum {
 
 void *handle_client_connection(void *param);
 
-#endif //WEBSERVER_CLIENT_H
+#endif //KETAMINE_CLIENT_H
