@@ -10,4 +10,6 @@
 extern unsigned long running_threads;
 extern _Bool running;
 
+extern const char *banner;
+
 #endif //WEBSERVER_GLOBAL_H
