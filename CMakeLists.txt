@@ -14,4 +14,5 @@ add_executable(server src/main.c
         src/routing.h
         src/client.h
         src/client.c
-        src/routing.c)
+        src/routing.c
+)

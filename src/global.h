@@ -8,9 +8,6 @@
 #include <stdbool.h>
 
 extern unsigned long running_threads;
-
-extern char *file_buffer;
-extern unsigned long file_size;
 extern _Bool running;
 
 #endif //WEBSERVER_GLOBAL_H

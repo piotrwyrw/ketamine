@@ -22,10 +22,13 @@ typedef struct {
         struct sockaddr_in addr;
         socklen_t addr_len;
         char *ip_addr;
-} server_connection;
 
-server_connection *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len);
-void free_connection(server_connection *conn);
+        char *file_buffer;
+        unsigned long file_size;
+} client_handle;
+
+client_handle *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len);
+void free_connection(client_handle *conn);
 
 int run_server();
 

@@ -19,7 +19,7 @@
 #include "settings.h"
 
 // Respond to a HTTP GET request
-request_status respond_get(int sockd, char *req, server_connection *conn)
+request_status respond_get(int sockd, char *req, client_handle *handle)
 {
 #ifdef WITH_DEBUG_FEATURES
         if (strncmp(req, "close-server", 12) == 0) {
@@ -30,14 +30,14 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
         char *file = parse_request(req);
 
         if (!file) {
-                CONNECTION_ERROR(conn, "Could not parse incoming request\n");
+                CONNECTION_ERROR(handle, "Could not parse incoming request\n");
                 return ERR;
         }
 
         size_t file_len;
 
         if ((file_len = strnlen(file, MAX_STRING_LENGTH)) == 0) {
-                CONNECTION_ERROR(conn, "An error occurred while parsing the GET request\n");
+                CONNECTION_ERROR(handle, "An error occurred while parsing the GET request\n");
                 return ERR;
         }
 
@@ -45,7 +45,7 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
         char *route_target = resolve_route(file);
 
         if (route_target) {
-                CONNECTION_LOG(conn, "Routing \"%s\" -> \"%s\"\n", file, route_target)
+                CONNECTION_LOG(handle, "Routing \"%s\" -> \"%s\"\n", file, route_target)
                 file = route_target;
         }
 
@@ -64,9 +64,9 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
 
         }
 
-        int status = read_file(file);
+        int status = read_file(file, handle);
         if (status < 0) {
-                CONNECTION_LOG(conn, "GET \"%s\" -> Resource unavailable\n", file);
+                CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file);
 
                 status = send(sockd, http_not_found, strnlen(http_not_found, MAX_STRING_LENGTH), 0) >= 0 ? 0 : -1;
                 HANDLE_ERRORS("send(404)", status)
@@ -74,9 +74,9 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
                 return GET_ERR;
         }
 
-        CONNECTION_LOG(conn, "GET \"%s\" -> Resource found\n", file);
+        CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file);
 
-        size_t response_length = file_size + 100;
+        size_t response_length = handle->file_size + 100;
         char *http_response = calloc(response_length, sizeof(char));
         if (!http_response) {
                 ERROR_LOG("Failed to allocate memory for HTTP response.\n")
@@ -84,8 +84,8 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
         }
         sprintf(http_response,
                 "HTTP/1.1 200 OK\r\nContent-Length: %ld\r\nAccept-Ranges: bytes\r\nConnection: Closed\r\n\r\n%s",
-                file_size,
-                file_buffer);
+                handle->file_size,
+                handle->file_buffer);
 
 
         status = send(sockd, http_response, strnlen(http_response, response_length), 0) >= 0 ? 0 : -1;
@@ -98,12 +98,12 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
 
 void *handle_client_connection(void *param)
 {
-        server_connection *conn = (server_connection *) param;
+        client_handle *handle = (client_handle *) param;
 
-        int client_socket = conn->client_sockd;
+        int client_socket = handle->client_sockd;
         char buffer[1001] = {0};
 
-        CONNECTION_LOG(conn, "New connection established\n");
+        CONNECTION_LOG(handle, "New connection established\n");
 
         ssize_t req_size;
 
@@ -112,7 +112,7 @@ void *handle_client_connection(void *param)
 
         if (req_size < 0) {
                 if (!running) {
-                        CONNECTION_LOG(conn, "Server thread was requested to terminate.\n");
+                        CONNECTION_LOG(handle, "Server thread was requested to terminate.\n");
                         goto close_session;
                 }
                 if ((errno == EWOULDBLOCK || errno == EAGAIN)) {
@@ -123,23 +123,23 @@ void *handle_client_connection(void *param)
         }
 
         if (req_size == 0) {
-//                CONNECTION_LOG(conn, "No incoming requests.\n")
+//                CONNECTION_LOG(handle, "No incoming requests.\n")
                 goto close_session;
         }
 
-        request_status req = respond_get(client_socket, buffer, conn);
+        request_status req = respond_get(client_socket, buffer, handle);
 
 #ifdef WITH_DEBUG_FEATURES
         if (req == EXIT) {
-                CONNECTION_LOG(conn, "Client requested server shutdown.\n")
+                CONNECTION_LOG(handle, "Client requested server shutdown.\n")
         }
 #endif
 
         close_session:;
-        free_file_buffer();
+        free_file_buffer(handle);
         close(client_socket);
-        CONNECTION_LOG(conn, "Disconnected\n");
-        free_connection(conn);
+        CONNECTION_LOG(handle, "Disconnected\n");
+        free_connection(handle);
 
 #ifdef WITH_DEBUG_FEATURES
         if (req == EXIT) {

@@ -3,14 +3,17 @@
 //
 
 #include "fio.h"
-#include "global.h"
 #include "defs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-int read_file(char *path)
+int read_file_to(char *path, char **buffer, unsigned long *length)
 {
+        if (!path || !buffer || !length) {
+                return -1;
+        }
+
         FILE *f = fopen(path, "r");
         if (!f) {
                 return -1;
@@ -25,33 +28,38 @@ int read_file(char *path)
 
         rewind(f);
 
-        file_buffer = calloc(len + 1, sizeof(char));
+        *buffer = calloc(len + 1, sizeof(char));
 
-        if (!file_buffer) {
+        if (!*buffer) {
                 ERROR_LOG("Failed to allocate file buffer.\n")
                 return -1;
         }
 
-        if (fread(file_buffer, sizeof(char), len, f) == 0) {
+        if (fread(*buffer, sizeof(char), len, f) == 0) {
                 return -1;
         }
 
-        file_size = len;
+        *length = len;
 
         rewind(f);
 
         return 0;
 }
 
-void free_file_buffer()
+int read_file(char *path, client_handle *handle)
 {
-        if (file_buffer == NULL) {
+        return read_file_to(path, &handle->file_buffer, &handle->file_size);
+}
+
+void free_file_buffer(client_handle *handle)
+{
+        if (handle->file_buffer == NULL) {
                 goto final;
         }
 
-        free(file_buffer);
-        file_buffer = NULL;
+        free(handle->file_buffer);
+        handle->file_buffer = NULL;
 
         final:
-        file_size = 0;
+        handle->file_size = 0;
 }

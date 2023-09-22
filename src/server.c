@@ -25,9 +25,9 @@ const char *http_not_found = "HTTP/1.1 404 NOT-FOUND\r\nConnection: Closed\r\n\r
 int server_sockd;
 int connection_ids = 0;
 
-server_connection *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len)
+client_handle *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len)
 {
-        server_connection *conn = malloc(sizeof(server_connection));
+        client_handle *conn = malloc(sizeof(client_handle));
 
         if (!conn) {
                 return NULL;
@@ -38,13 +38,21 @@ server_connection *new_connection(int sockd, struct sockaddr_in addr, socklen_t 
         conn->addr = addr;
         conn->addr_len = addr_len;
         conn->ip_addr = inet_ntoa(addr.sin_addr);
+
+        conn->file_buffer = NULL;
+        conn->file_size = 0;
+
         return conn;
 }
 
-void free_connection(server_connection *conn)
+void free_connection(client_handle *conn)
 {
         if (!conn) {
                 return;
+        }
+
+        if (conn->file_buffer) {
+                free(conn->file_buffer);
         }
 
         free(conn);
@@ -117,7 +125,7 @@ int run_server()
                         continue;
                 }
 
-                server_connection *conn = new_connection(status, in_addr, addr_len);
+                client_handle *conn = new_connection(status, in_addr, addr_len);
 
                 if (!conn) {
                         ERROR_LOG("Failed to allocate a connection structure\n")
@@ -139,7 +147,7 @@ int run_server()
         }
 
         return_all:
-        INFO_LOG("Server shutting down ...\n");
+INFO_LOG("Server shutting down ...\n");
 
         return 0;
 }
