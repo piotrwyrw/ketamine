@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26.0)
 
-project(WebServer C)
-add_executable(server src/main.c
+project(ketamine C)
+add_executable(ketamine src/main.c
         src/parse.c
         src/settings.h
         src/defs.h
