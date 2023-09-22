@@ -26,6 +26,11 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
 
         char *file = parse_request(req);
 
+        if (!file) {
+                CONNECTION_ERROR(conn, "Could not parse incoming request\n");
+                return ERR;
+        }
+
         char *route_target = resolve_route(file);
 
         if (route_target) {

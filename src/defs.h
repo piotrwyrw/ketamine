@@ -11,8 +11,12 @@
                 return -1; \
         }
 
+#define CONNECTION_ERROR(conn, ...) \
+        printf("[ERR: %s | %d] ", conn->ip_addr, conn->conn_id);                      \
+        printf(__VA_ARGS__);
+
 #define CONNECTION_LOG(conn, ...) \
-        printf("[%s | %d] ", conn->ip_addr, conn->conn_id);                      \
+        printf("[LOG: %s | %d] ", conn->ip_addr, conn->conn_id);                      \
         printf(__VA_ARGS__);
 
 #define LOG(...) \

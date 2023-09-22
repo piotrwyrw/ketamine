@@ -3,8 +3,8 @@
 
 int main(void)
 {
-//        route("/", "home.html");
-//        route("/contact", "contact.html");
+        route("/", "home.html");
+        route("/contact", "contact.html");
         run_server();
         return 0;
 }
