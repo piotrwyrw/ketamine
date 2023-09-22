@@ -15,7 +15,7 @@ int read_file(char *path)
                 return -1;
         }
 
-        fseeko(f, 0, SEEK_END);
+        fseek(f, 0, SEEK_END);
         long len = ftell(f);
 
         if (len < 0) {

@@ -9,8 +9,6 @@ add_executable(server src/main.c
         src/global.c
         src/fio.h
         src/fio.c
-        src/util.h
-        src/util.c
         src/server.h
         src/server.c
         src/routing.h

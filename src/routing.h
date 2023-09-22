@@ -7,13 +7,14 @@
 
 #include <stdbool.h>
 
+#include "settings.h"
+
 #define MAX_ROUTES 100
-#define ROUTE_STRING_LENGTH 100
 #define DEFAULT_ROUTE NULL
 
 typedef struct {
-        char src[ROUTE_STRING_LENGTH];
-        char target[ROUTE_STRING_LENGTH];
+        char src[MAX_STRING_LENGTH];
+        char target[MAX_STRING_LENGTH];
 } route_entry;
 
 extern route_entry routes[];

@@ -10,27 +10,23 @@
 // Parse a HTTP 'GET' request
 char *parse_request(char *req)
 {
-        if (strlen(req) == 0) {
+        if (strnlen(req, MAX_STRING_LENGTH) == 0) {
                 return NULL;
         }
 
-        char *tok = strtok(req, "\n\r");
+        char *tok = strsep(&req, "\n\r");
 
         if (tok == NULL) {
                 return NULL;
         }
 
-        char *file = strtok(tok, " ");
+        char *file = strsep(&tok, " ");
 
         if (file == NULL) {
                 return NULL;
         }
 
-        if (strcmp(file, "GET") != 0) {
-                return NULL;
-        }
-
-        file = strtok(NULL, " ");
+        file = strsep(&tok, " ");
 
         if (file == NULL) {
                 return NULL;

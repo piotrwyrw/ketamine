@@ -28,6 +28,11 @@ int connection_ids = 0;
 server_connection *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len)
 {
         server_connection *conn = malloc(sizeof(server_connection));
+
+        if (!conn) {
+                return NULL;
+        }
+
         conn->conn_id = connection_ids;
         conn->client_sockd = sockd;
         conn->addr = addr;
@@ -38,6 +43,10 @@ server_connection *new_connection(int sockd, struct sockaddr_in addr, socklen_t 
 
 void free_connection(server_connection *conn)
 {
+        if (!conn) {
+                return;
+        }
+
         free(conn);
 }
 
@@ -80,10 +89,11 @@ int run_server()
         int status;
         int client_socket;
 
-        LOG("Server is UP AND RUNNING on http://localhost:%d\n\n", LISTEN_PORT)
+        INFO_LOG("Server is UP AND RUNNING on http://localhost:%d\n\n", LISTEN_PORT)
 
         while (true) {
                 status = accept(server_sockd, (struct sockaddr *) &in_addr, &addr_len);
+
                 if (status < 0) {
                         if (errno == EWOULDBLOCK || errno == EAGAIN) {
                                 if (!running) {
@@ -97,11 +107,22 @@ int run_server()
                 client_socket = status;
 
                 if (in_addr.sin_family != AF_INET) {
-                        close(client_socket);
+                        status = close(client_socket);
+                        HANDLE_ERRORS("close", status)
+
                         continue;
                 }
 
                 server_connection *conn = new_connection(status, in_addr, addr_len);
+
+                if (!conn) {
+                        ERROR_LOG("Failed to allocate a connection structure")
+
+                        status = close(client_socket);
+                        HANDLE_ERRORS("close", status)
+
+                        return -1;
+                }
 
                 // Handle this client in an async thread
                 pthread_t thread;

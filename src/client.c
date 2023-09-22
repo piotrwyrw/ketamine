@@ -20,14 +20,23 @@
 
 request_status respond_get(int sockd, char *req, server_connection *conn)
 {
-        if (strcmp(req, "close-server") == 0) {
+#ifdef WITH_DEBUG_FEATURES
+        if (strncmp(req, "close-server", 12) == 0) {
                 return EXIT;
         }
+#endif
 
         char *file = parse_request(req);
 
         if (!file) {
                 CONNECTION_ERROR(conn, "Could not parse incoming request\n");
+                return ERR;
+        }
+
+        size_t file_len;
+
+        if ((file_len = strnlen(file, MAX_STRING_LENGTH)) == 0) {
+                CONNECTION_ERROR(conn, "An error occurred while parsing the GET request\n");
                 return ERR;
         }
 
@@ -38,11 +47,11 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
                 file = route_target;
         }
 
-        if (strcmp(file, "/") == 0) {
+        if (file_len == 1 && file[0] == '/') {
                 file = INDEX_FILE_NAME;
         }
 
-        if (!route_target && file[0] == '/') {
+        if (!route_target && file[0] == '/' && file_len > 1) {
                 file++;
         }
 
@@ -50,7 +59,7 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
         if (status < 0) {
                 CONNECTION_LOG(conn, "GET \"%s\" -> Resource unavailable\n", file);
 
-                status = send(sockd, http_not_found, strlen(http_not_found), 0) >= 0 ? 0 : -1;
+                status = send(sockd, http_not_found, strnlen(http_not_found, MAX_STRING_LENGTH), 0) >= 0 ? 0 : -1;
                 HANDLE_ERRORS("send(404)", status)
 
                 return GET_ERR;
@@ -58,17 +67,18 @@ request_status respond_get(int sockd, char *req, server_connection *conn)
 
         CONNECTION_LOG(conn, "GET \"%s\" -> Resource found\n", file);
 
-        char *http_success = calloc(file_size + 100, sizeof(char));
-        sprintf(http_success,
+        size_t response_length = file_size + 100;
+        char *http_response = calloc(response_length, sizeof(char));
+        sprintf(http_response,
                 "HTTP/1.1 200 KETAMINE-OK\r\nContent-Length: %ld\r\nAccept-Ranges: bytes\r\nConnection: Closed\r\n\r\n%s",
                 file_size,
                 file_buffer);
 
 
-        status = send(sockd, http_success, strlen(http_success), 0) >= 0 ? 0 : -1;
+        status = send(sockd, http_response, strnlen(http_response, response_length), 0) >= 0 ? 0 : -1;
         HANDLE_ERRORS("send", status)
 
-        free(http_success);
+        free(http_response);
 
         return GET_OK;
 }
@@ -98,24 +108,34 @@ void *handle_client_connection(void *param)
         }
 
         if (req_size == 0) {
-                CONNECTION_LOG(conn, "No incoming requests.\n");
+                CONNECTION_LOG(conn, "No incoming requests.\n")
                 goto close_session;
         }
 
         request_status req = respond_get(client_socket, buffer, conn);
 
+#ifdef WITH_DEBUG_FEATURES
         if (req == EXIT) {
-                running = false;
+                CONNECTION_LOG(conn, "Client requested server shutdown.\n")
         }
+#endif
 
-        close_session:
+        close_session:;
+
         free_file_buffer();
+
         close(client_socket);
 
         indent--;
         CONNECTION_LOG(conn, "Disconnected\n");
 
         free_connection(conn);
+
+#ifdef WITH_DEBUG_FEATURES
+        if (req == EXIT) {
+                running = false;
+        }
+#endif
 
         return NULL;
 }

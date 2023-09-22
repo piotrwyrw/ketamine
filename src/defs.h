@@ -19,9 +19,12 @@
         printf("[LOG: %s | %d] ", conn->ip_addr, conn->conn_id);                      \
         printf(__VA_ARGS__);
 
-#define LOG(...) \
-        printf("[Server] "); \
+#define INFO_LOG(...) \
+        printf("[LOG] "); \
         printf(__VA_ARGS__);
 
+#define ERROR_LOG(...) \
+        printf("[ERR] "); \
+        printf(__VA_ARGS__);
 
 #endif //WEBSERVER_DEFS_H
