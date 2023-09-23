@@ -21,6 +21,10 @@
 // Respond to a HTTP GET request
 request_status respond_get(int sockd, char *req, client_handle *handle)
 {
+        if (!req || !handle) {
+                return ERR;
+        }
+
 #ifdef WITH_DEBUG_FEATURES
         if (strncmp(req, "close-server", 12) == 0) {
                 return EXIT;

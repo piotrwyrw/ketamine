@@ -12,6 +12,10 @@
 // Parse a HTTP 'GET' request
 char *parse_request(char *req, client_handle *handle)
 {
+        if (!req || !handle) {
+                return NULL;
+        }
+
         if (strnlen(req, MAX_STRING_LENGTH) == 0) {
                 return NULL;
         }
