@@ -4,7 +4,7 @@
 
 #include "parse.h"
 #include "global.h"
-#include "defs.h"
+#include "slog.h"
 
 #include <string.h>
 #include <stdio.h>

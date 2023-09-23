@@ -10,7 +10,8 @@
 #include <unistd.h>
 
 #include "server.h"
-#include "defs.h"
+#include "slog.h"
+#include "gplogging.h"
 #include "global.h"
 #include "parse.h"
 #include "fio.h"

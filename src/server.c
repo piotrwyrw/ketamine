@@ -5,9 +5,11 @@
 #include "server.h"
 
 #include "global.h"
-#include "defs.h"
+#include "slog.h"
+#include "gplogging.h"
 #include "client.h"
 #include "threadsafe.h"
+#include "modules/modules.h"
 
 #include <stdbool.h>
 #include <sys/socket.h>
@@ -158,6 +160,8 @@ int run_server()
         }
 
         return_all:;
+        modules_unload_all();
+
         INFO_LOG("Server shutting down ...\n")
 
         status = pthread_mutex_destroy(&global_mutex);

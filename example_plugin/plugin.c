@@ -2,13 +2,17 @@
 // Created by Piotr Krzysztof Wyrwas on 23.09.23.
 //
 
-#include "../sdk/module_sdk.h"
+#define KetamineModuleName "TestPlugin"
 
-void internal_ketamine_function();
+#include "../sdk/sdk.h"
 
-__ketamine_register("SDKTest")
-
-__ketamine__init
+ModuleRouteOverride(path)
 {
-        internal_ketamine_function();
+        ModuleLog("A client requested the resource \"%s\"\n", path)
+        return NULL;
+}
+
+ModuleInit
+{
+        ModuleLog("Initializing testing plugin.\n")
 }

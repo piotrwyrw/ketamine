@@ -9,7 +9,7 @@ int main(void)
 {
         printf("%s\n", banner);
         load_routes_file(ROUTES_FILE_NAME);
-        load_module("sample", "libsample_plugin.dylib");
+        load_module("sample", "../lib/plugin.dylib");
         modules_init_all();
         run_server();
         return 0;

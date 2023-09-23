@@ -4,7 +4,8 @@
 
 #include "routing.h"
 #include "global.h"
-#include "defs.h"
+#include "gplogging.h"
+#include "modules/overrides.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -55,6 +56,11 @@ char *resolve_route_raw(char *src)
 {
         if (!src) {
                 return NULL;
+        }
+
+        char *override = resolve_route_override(src);
+        if (override) {
+                return override;
         }
 
         size_t src_len = strnlen(src, MAX_STRING_LENGTH);

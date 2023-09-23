@@ -5,7 +5,7 @@
 #include <pthread.h>
 #include "global.h"
 #include "threadsafe.h"
-#include "defs.h"
+#include "gplogging.h"
 
 #include <stdio.h>
 

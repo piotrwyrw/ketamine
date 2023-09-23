@@ -13,7 +13,7 @@ typedef struct {
 
         void (*init)();
 
-        const char *(*name)();
+        char *(*route_override)(char *);
 } dynamic_module;
 
 extern dynamic_module loaded_modules[];
@@ -24,5 +24,7 @@ int load_module(char *name, char *path);
 int load_module_symbols(dynamic_module *module);
 
 void modules_init_all();
+
+void modules_unload_all();
 
 #endif //KETAMINE_MODULES_H

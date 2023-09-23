@@ -3,8 +3,8 @@
 //
 
 #include "modules.h"
-#include "../defs.h"
-#include "../../sdk/module_sdk.h"
+#include "../gplogging.h"
+#include "../../sdk/base.h"
 
 #include <dlfcn.h>
 #include <stdio.h>
@@ -40,22 +40,14 @@ int load_module(char *name, char *path)
                 return -1;
         }
 
-        const char *logging_identifier = (*mod->name)();
-
-        if (!logging_identifier) {
-                ERROR_LOG("Logging identifier of module \"%s\" must not be NULL!\n", name);
-                dlclose(handle);
-                return -1;
-        }
-
-        INFO_LOG("Loaded module from \"%s\" as \"%s\" identified by \"%s\" \n", path, name, (*mod->name)());
+        INFO_LOG("Module loaded: %s (%s)\n", name, path);
 
         modules_count++;
 
         return 0;
 }
 
-static int load_module_symbol(void *handle, void **target, char *symbol)
+static int load_module_symbol(void *handle, void **target, char *symbol, _Bool required)
 {
         if (!handle || !target) {
                 return -1;
@@ -64,7 +56,9 @@ static int load_module_symbol(void *handle, void **target, char *symbol)
         void *sym = dlsym(handle, symbol);
 
         if (!sym) {
-                ERROR_LOG("Module symbol not found: %s\n", symbol);
+                if (required) {
+                        ERROR_LOG("Module symbol not found: %s\n", symbol);
+                }
                 return -1;
         }
 
@@ -84,8 +78,8 @@ int load_module_symbols(dynamic_module *module)
                 return -1;
         }
 
-        TRY(load_module_symbol(module->handle, (void **) &(module->init), MODULE_INIT_FUNCTION))
-        TRY(load_module_symbol(module->handle, (void **) &module->name, MODULE_NAME_FUNCTION))
+        TRY(load_module_symbol(module->handle, (void **) &(module->init), MODULE_INIT_FUNCTION, true))
+        load_module_symbol(module->handle, (void **) &(module->route_override), MODULE_ROUTE_OVERRIDE, false);
 
         return 0;
 }
@@ -98,4 +92,28 @@ void modules_init_all()
                 dynamic_module *mod = &(loaded_modules[i]);
                 (*mod->init)();
         }
+}
+
+void modules_unload_all()
+{
+        if (modules_count == 0) {
+                INFO_LOG("No dynamic modules to unload.\n");
+                return;
+        }
+
+        for (unsigned long i = 0; i < modules_count; i++) {
+                dynamic_module *mod = &(loaded_modules[i]);
+
+                if (!mod->handle) {
+                        continue;
+                }
+
+                if (dlclose(mod->handle) == 0) {
+                        INFO_LOG("Unloaded module \"%s\"\n", mod->import_name)
+                } else {
+                        ERROR_LOG("Could not unload module \"%s\": %s\n", mod->import_name, dlerror())
+                }
+        }
+
+        modules_count = 0;
 }

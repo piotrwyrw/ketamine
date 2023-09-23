@@ -5,7 +5,7 @@
 #include "fio.h"
 #include "cfgroute.h"
 #include "routing.h"
-#include "defs.h"
+#include "gplogging.h"
 
 #include <string.h>
 #include <stdio.h>

@@ -3,7 +3,7 @@
 //
 
 #include "fio.h"
-#include "defs.h"
+#include "gplogging.h"
 
 #include <stdio.h>
 #include <stdlib.h>
