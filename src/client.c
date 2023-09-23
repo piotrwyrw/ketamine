@@ -89,14 +89,16 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         size_t response_length = handle->file_size + 100;
         char *http_response = calloc(response_length, sizeof(char));
+
         if (!http_response) {
                 ERROR_LOG("Failed to allocate memory for HTTP response.\n")
                 return ERR;
         }
-        sprintf(http_response,
-                "HTTP/1.1 200 OK\r\nContent-Length: %ld\r\nAccept-Ranges: bytes\r\nConnection: Closed\r\n\r\n%s",
-                handle->file_size,
-                handle->file_buffer);
+
+        snprintf(http_response, response_length,
+                 "HTTP/1.1 200 OK\r\nContent-Length: %ld\r\nAccept-Ranges: bytes\r\nConnection: Closed\r\n\r\n%s",
+                 handle->file_size,
+                 handle->file_buffer);
 
 
         status = send(sockd, http_response, strnlen(http_response, response_length), 0) >= 0 ? 0 : -1;
