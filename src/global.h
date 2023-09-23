@@ -5,6 +5,9 @@
 #ifndef KETAMINE_GLOBAL_H
 #define KETAMINE_GLOBAL_H
 
+#include <stdbool.h>
+#include <pthread.h>
+
 #define WITH_DEBUG_FEATURES
 
 #define INDEX_FILE_NAME "index.html"
@@ -13,11 +16,10 @@
 #define MAX_STRING_LENGTH 100
 #define CONNECTION_LIMIT 10
 
-#include <stdbool.h>
+extern const char *banner;
 
+pthread_mutex_t global_mutex;
 extern unsigned long running_threads;
 extern _Bool running;
-
-extern const char *banner;
 
 #endif //KETAMINE_GLOBAL_H

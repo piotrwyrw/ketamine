@@ -111,7 +111,7 @@ void *handle_client_connection(void *param)
         req_size = recv(client_socket, buffer, 1000, 0);
 
         if (req_size < 0) {
-                if (!running) {
+                if (!is_running()) {
                         CONNECTION_LOG(handle, "Server thread was requested to terminate.\n");
                         goto close_session;
                 }
@@ -141,13 +141,15 @@ void *handle_client_connection(void *param)
 
 #ifdef WITH_DEBUG_FEATURES
         if (tmp_req == EXIT) {
-                running = false;
+                request_server_shutdown();
         }
 #endif
 
-        running_threads--;
+        decrement_running_threads();
 
-        INFO_LOG("---- %ld Thread%s still running ----\n", running_threads, (running_threads == 1) ? "" : "s")
+        unsigned long tmp_running_threads = get_running_threads();
+
+        INFO_LOG("---- %ld Thread%s still running ----\n", tmp_running_threads, (tmp_running_threads == 1) ? "" : "s")
 
         return NULL;
 }

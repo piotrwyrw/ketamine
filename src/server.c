@@ -7,7 +7,6 @@
 #include "global.h"
 #include "defs.h"
 #include "client.h"
-#include "global.h"
 
 #include <stdbool.h>
 #include <sys/socket.h>
@@ -24,6 +23,50 @@ const char *http_not_found = "HTTP/1.1 404 NOT-FOUND\r\nConnection: Closed\r\n\r
 
 int server_sockd;
 int connection_ids = 0;
+
+_Bool is_running()
+{
+        _Bool val;
+
+        pthread_mutex_lock(&global_mutex);
+        val = running;
+        pthread_mutex_unlock(&global_mutex);
+
+        return val;
+}
+
+void request_server_shutdown()
+{
+        pthread_mutex_lock(&global_mutex);
+        running = false;
+        pthread_mutex_unlock(&global_mutex);
+}
+
+unsigned long get_running_threads()
+{
+        unsigned long val;
+
+        pthread_mutex_lock(&global_mutex);
+        val = running_threads;
+        pthread_mutex_unlock(&global_mutex);
+
+        return val;
+}
+
+void increment_running_threads()
+{
+        pthread_mutex_lock(&global_mutex);
+        running_threads++;
+        pthread_mutex_unlock(&global_mutex);
+}
+
+void decrement_running_threads()
+{
+        pthread_mutex_lock(&global_mutex);
+        running_threads--;
+        pthread_mutex_unlock(&global_mutex);
+}
+
 
 client_handle *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len)
 {
@@ -99,12 +142,15 @@ int run_server()
         int status;
         int tmp_client_socket;
 
+        status = pthread_mutex_init(&global_mutex, NULL);
+        HANDLE_ERRORS("pthread_mutex_init", status)
+
         INFO_LOG("Server is UP AND RUNNING on http://localhost:%d\n\n", LISTEN_PORT)
 
         while (true) {
-                if (!running) {
+                if (!is_running()) {
                         INFO_LOG("---- Server shutdown requested. Waiting for all threads to terminate ----\n")
-                        while (running_threads > 0) {}
+                        while (get_running_threads() > 0) {}
                         goto return_all;
                 }
 
@@ -123,7 +169,7 @@ int run_server()
                         goto close_continue;
                 }
 
-                if (running_threads + 1 > CONNECTION_LIMIT) {
+                if (get_running_threads() + 1 > CONNECTION_LIMIT) {
                         INFO_LOG("Could nbt handle incoming connection: Connection limit would be exceeded.\n")
                         goto close_continue;
                 }
@@ -139,7 +185,7 @@ int run_server()
                         return -1;
                 }
 
-                running_threads++;
+                increment_running_threads();
 
                 // Handle this client in an async thread
                 pthread_t thread;
@@ -154,8 +200,11 @@ int run_server()
                 HANDLE_ERRORS("close", status)
         }
 
-        return_all:
-INFO_LOG("Server shutting down ...\n");
+        return_all:;
+        INFO_LOG("Server shutting down ...\n")
+
+        status = pthread_mutex_destroy(&global_mutex);
+        HANDLE_ERRORS("pthread_mutex_destroy", status)
 
         return 0;
 }
