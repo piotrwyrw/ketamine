@@ -60,11 +60,20 @@ char *resolve_route_raw(char *src)
         return NULL;
 }
 
-char *resolve_route(char *src)
+// Resolve all routes (including cross-referencing routes)
+char *resolve_all_routes(char *src)
 {
         char *target = resolve_route_raw(src);
-        if (target) {
-                return target;
+        char *tmp_target;
+
+        while ((tmp_target = resolve_route_raw(target))) {
+                target = tmp_target;
         }
-        return DEFAULT_ROUTE;
+
+        return target;
+}
+
+char *resolve_route(char *src)
+{
+        return resolve_all_routes(src);
 }

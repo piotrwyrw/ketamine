@@ -14,6 +14,7 @@ int load_routes_file(char *path)
 {
         // Read the file into memory
         if (!path) {
+                ERROR_LOG("Path for the routes file is empty.\n")
                 return -1;
         }
 
@@ -22,6 +23,7 @@ int load_routes_file(char *path)
         unsigned long length;
 
         if (read_file_to(path, &base_buffer, &length) < 0) {
+                ERROR_LOG("Could not read routes file: \"%s\"\n", path)
                 return -1;
         }
 
@@ -54,6 +56,8 @@ int load_routes_file(char *path)
                         ERROR_LOG("Routes: could not route: \"%s\" -> \"%s\"\n", left, right)
                 }
         }
+
+        INFO_LOG("Done reading routes file.\n");
 
         free(base_buffer);
         return 0;
