@@ -18,7 +18,7 @@
 
 extern const char *banner;
 
-pthread_mutex_t global_mutex;
+extern pthread_mutex_t global_mutex;
 extern unsigned long running_threads;
 extern _Bool running;
 

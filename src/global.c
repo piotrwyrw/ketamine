@@ -4,6 +4,7 @@
 
 #include "global.h"
 
+pthread_mutex_t global_mutex;
 unsigned long running_threads = 0;
 _Bool running = true;
 
