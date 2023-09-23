@@ -20,12 +20,13 @@ set(KETAMINE_SOURCES src/main.c
         src/threadsafe.h
         src/modules/modules.h
         src/modules/modules.c
+        src/example.c
         example_plugin/plugin.c
         sdk/module_sdk.h)
 
 add_executable(ketamine ${KETAMINE_SOURCES})
 
-add_library(libketamine SHARED ${KETAMINE_SOURCES})
+add_library(libketamine STATIC ${KETAMINE_SOURCES})
 
 add_library(sample_plugin SHARED example_plugin/plugin.c)
 target_link_libraries(sample_plugin libketamine)

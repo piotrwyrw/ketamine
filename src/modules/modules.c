@@ -91,3 +91,11 @@ int load_module_symbols(dynamic_module *module)
 }
 
 #undef TRY
+
+void modules_init_all()
+{
+        for (unsigned long i = 0; i < modules_count; i++) {
+                dynamic_module *mod = &(loaded_modules[i]);
+                (*mod->init)();
+        }
+}

@@ -23,4 +23,6 @@ int load_module(char *name, char *path);
 
 int load_module_symbols(dynamic_module *module);
 
+void modules_init_all();
+
 #endif //KETAMINE_MODULES_H
