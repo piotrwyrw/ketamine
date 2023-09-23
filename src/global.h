@@ -11,7 +11,7 @@
 #define ROUTES_FILE_NAME "routes"
 #define LISTEN_PORT 80
 #define MAX_STRING_LENGTH 100
-#define CONNECTION_LIMIT 20
+#define CONNECTION_LIMIT 10
 
 #include <stdbool.h>
 

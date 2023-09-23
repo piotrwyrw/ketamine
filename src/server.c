@@ -97,12 +97,11 @@ int run_server()
         socklen_t addr_len;
 
         int status;
-        int client_socket;
+        int tmp_client_socket;
 
         INFO_LOG("Server is UP AND RUNNING on http://localhost:%d\n\n", LISTEN_PORT)
 
         while (true) {
-
                 if (!running) {
                         INFO_LOG("---- Server shutdown requested. Waiting for all threads to terminate ----\n")
                         while (running_threads > 0) {}
@@ -118,13 +117,15 @@ int run_server()
                 }
 
                 HANDLE_ERRORS("accept", status)
-                client_socket = status;
+                tmp_client_socket = status;
 
                 if (in_addr.sin_family != AF_INET) {
-                        status = close(client_socket);
-                        HANDLE_ERRORS("close", status)
+                        goto close_continue;
+                }
 
-                        continue;
+                if (running_threads + 1 > CONNECTION_LIMIT) {
+                        INFO_LOG("Could nbt handle incoming connection: Connection limit would be exceeded.\n")
+                        goto close_continue;
                 }
 
                 client_handle *conn = new_connection(status, in_addr, addr_len);
@@ -132,7 +133,7 @@ int run_server()
                 if (!conn) {
                         ERROR_LOG("Failed to allocate a connection structure\n")
 
-                        status = close(client_socket);
+                        status = close(tmp_client_socket);
                         HANDLE_ERRORS("close", status)
 
                         return -1;
@@ -146,6 +147,11 @@ int run_server()
                 pthread_detach(thread);
 
                 connection_ids++;
+                continue;
+
+                close_continue:
+                status = close(tmp_client_socket);
+                HANDLE_ERRORS("close", status)
         }
 
         return_all:

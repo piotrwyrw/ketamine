@@ -118,8 +118,7 @@ void *handle_client_connection(void *param)
                 if ((errno == EWOULDBLOCK || errno == EAGAIN)) {
                         goto receive_req;
                 }
-                printf("Could not receive data.\n");
-                return NULL;
+                goto close_session;
         }
 
         if (req_size == 0) {
@@ -134,7 +133,7 @@ void *handle_client_connection(void *param)
         }
 #endif
 
-        close_session:;
+        close_session:
         close(client_socket);
         CONNECTION_LOG(handle, "Disconnected\n");
         request_status tmp_req = handle->req;
