@@ -41,4 +41,6 @@ flowchart LR
     b --> c[Is Target a Route?]
     c -- Yes --> b
     c -- No --> d[HTTP Response Generator]
+    b --> h[Route overrides?]
+    h --> c
 ```
