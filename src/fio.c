@@ -11,13 +11,6 @@
 
 int read_file_to(char *path, char **buffer, unsigned long *length)
 {
-        // TODO REMOVE THIS -- JUST FOR DEBUG !
-        if (strcmp(path, "/") == 0) {
-                goto ok;
-        }
-
-        ok:
-
         if (!path || !buffer || !length) {
                 return -1;
         }
