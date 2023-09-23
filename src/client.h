@@ -6,6 +6,9 @@
 #define KETAMINE_CLIENT_H
 
 typedef enum {
+        DEFAULT,
+        RESOURCE_UNAVAILABLE,
+
         GET_OK,
         GET_ERR,
         EXIT,

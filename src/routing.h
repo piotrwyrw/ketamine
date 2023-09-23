@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "settings.h"
+#include "global.h"
 
 #define MAX_ROUTES 100
 #define DEFAULT_ROUTE NULL

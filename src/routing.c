@@ -3,7 +3,7 @@
 //
 
 #include "routing.h"
-#include "settings.h"
+#include "global.h"
 #include "defs.h"
 
 #include <string.h>

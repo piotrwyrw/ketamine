@@ -16,7 +16,6 @@
 #include "fio.h"
 #include "client.h"
 #include "routing.h"
-#include "settings.h"
 
 // Respond to a HTTP GET request
 request_status respond_get(int sockd, char *req, client_handle *handle)
@@ -71,7 +70,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 status = send(sockd, http_not_found, strnlen(http_not_found, MAX_STRING_LENGTH), 0) >= 0 ? 0 : -1;
                 HANDLE_ERRORS("send(404)", status)
 
-                return GET_ERR;
+                return RESOURCE_UNAVAILABLE;
         }
 
         CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file);
@@ -106,6 +105,7 @@ void *handle_client_connection(void *param)
         CONNECTION_LOG(handle, "New connection established\n");
 
         ssize_t req_size;
+        handle->req = DEFAULT;
 
         receive_req:
         req_size = recv(client_socket, buffer, 1000, 0);
@@ -123,26 +123,25 @@ void *handle_client_connection(void *param)
         }
 
         if (req_size == 0) {
-//                CONNECTION_LOG(handle, "No incoming requests.\n")
                 goto close_session;
         }
 
-        request_status req = respond_get(client_socket, buffer, handle);
+        handle->req = respond_get(client_socket, buffer, handle);
 
 #ifdef WITH_DEBUG_FEATURES
-        if (req == EXIT) {
+        if (handle->req == EXIT) {
                 CONNECTION_LOG(handle, "Client requested server shutdown.\n")
         }
 #endif
 
         close_session:;
-        free_file_buffer(handle);
         close(client_socket);
         CONNECTION_LOG(handle, "Disconnected\n");
+        request_status tmp_req = handle->req;
         free_connection(handle);
 
 #ifdef WITH_DEBUG_FEATURES
-        if (req == EXIT) {
+        if (tmp_req == EXIT) {
                 running = false;
         }
 #endif

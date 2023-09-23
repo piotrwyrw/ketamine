@@ -12,6 +12,8 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
+#include "client.h"
+
 extern const char *http_not_found;
 extern int server_sockd;
 extern int connection_ids;
@@ -25,9 +27,12 @@ typedef struct {
 
         char *file_buffer;
         unsigned long file_size;
+
+        request_status req;
 } client_handle;
 
 client_handle *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len);
+
 void free_connection(client_handle *conn);
 
 int run_server();

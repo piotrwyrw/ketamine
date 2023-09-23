@@ -7,9 +7,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int read_file_to(char *path, char **buffer, unsigned long *length)
 {
+        // TODO REMOVE THIS -- JUST FOR DEBUG !
+        if (strcmp(path, "/") == 0) {
+                goto ok;
+        }
+
+        ok:
+
         if (!path || !buffer || !length) {
                 return -1;
         }
@@ -22,7 +30,7 @@ int read_file_to(char *path, char **buffer, unsigned long *length)
         fseek(f, 0, SEEK_END);
         long len = ftell(f);
 
-        if (len < 0) {
+        if (len <= 0) {
                 return -1;
         }
 
@@ -37,6 +45,7 @@ int read_file_to(char *path, char **buffer, unsigned long *length)
 
         if (fread(*buffer, sizeof(char), len, f) == 0) {
                 free(*buffer);
+                *buffer = NULL;
                 return -1;
         }
 
