@@ -16,6 +16,9 @@
 #define MAX_STRING_LENGTH 100
 #define CONNECTION_LIMIT 10
 
+#define MAX_ROUTES 100
+#define MAX_DYNAMIC_MODULES 100
+
 extern const char *banner;
 
 extern pthread_mutex_t global_mutex;

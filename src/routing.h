@@ -9,8 +9,6 @@
 
 #include "global.h"
 
-#define MAX_ROUTES 100
-
 typedef struct {
         char src[MAX_STRING_LENGTH];
         char target[MAX_STRING_LENGTH];

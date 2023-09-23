@@ -18,7 +18,7 @@ int load_routes_file(char *path)
                 return -1;
         }
 
-        char *base_buffer; // Warning: This is a dynamic buffer - will need explicit free()-ing
+        char *base_buffer; // Warning: This is a loaded_modules buffer - will need explicit free()-ing
         char *buffer;
         unsigned long length;
 

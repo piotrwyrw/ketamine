@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26.0)
 
 project(ketamine C)
-add_executable(ketamine src/main.c
+set(KETAMINE_SOURCES src/main.c
         src/parse.c
         src/global.h
         src/defs.h
@@ -18,4 +18,14 @@ add_executable(ketamine src/main.c
         src/cfgroute.c
         src/threadsafe.c
         src/threadsafe.h
-)
+        src/modules/modules.h
+        src/modules/modules.c
+        example_plugin/plugin.c
+        sdk/module_sdk.h)
+
+add_executable(ketamine ${KETAMINE_SOURCES})
+
+add_library(libketamine SHARED ${KETAMINE_SOURCES})
+
+add_library(sample_plugin SHARED example_plugin/plugin.c)
+target_link_libraries(sample_plugin libketamine)
