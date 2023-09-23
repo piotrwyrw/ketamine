@@ -9,6 +9,8 @@
 #include <string.h>
 #include <stdio.h>
 
+_Bool route_directory_set = false;
+char route_directory[MAX_STRING_LENGTH] = {0};
 route_entry routes[MAX_ROUTES];
 unsigned long route_count = 0;
 
@@ -16,6 +18,17 @@ _Bool route(char *src, char *target)
 {
         if (!src || !target) {
                 return false;
+        }
+
+        if (strncmp(src, "[root]", 6) == 0) {
+                if (route_directory_set) {
+                        ERROR_LOG("Route root directory is already set; cannot overwrite.\n")
+                        return false;
+                }
+                strncpy(route_directory, target, MAX_STRING_LENGTH);
+                INFO_LOG("Working directory set to \"%s\"\n", target);
+                route_directory_set = true;
+                return true;
         }
 
         if (route_count >= MAX_ROUTES) {
@@ -46,6 +59,8 @@ char *resolve_route_raw(char *src)
 
         size_t src_len = strnlen(src, MAX_STRING_LENGTH);
 
+        char *target = NULL;
+
         for (unsigned long i = 0; i < route_count; i++) {
                 size_t route_src_len = strnlen(routes[i].src, MAX_STRING_LENGTH);
 
@@ -58,10 +73,11 @@ char *resolve_route_raw(char *src)
                         continue;
                 }
 
-                return routes[i].target;
+                target = routes[i].target;
+                break;
         }
 
-        return NULL;
+        return target;
 }
 
 // Resolve all routes (including cross-referencing routes)

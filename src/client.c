@@ -68,6 +68,13 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         }
 
+        char prefixed_file[MAX_STRING_LENGTH] = {0};
+
+        if (route_directory_set) {
+                snprintf(prefixed_file, MAX_STRING_LENGTH, "%s/%s", route_directory, file);
+                file = prefixed_file;
+        }
+
         int status = read_file(file, handle);
         if (status < 0) {
                 CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file);

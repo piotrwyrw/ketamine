@@ -50,7 +50,13 @@ int load_routes_file(char *path)
                         return -1;
                 }
 
-                if (route(left, right)) {
+                int route_status = route(left, right);
+
+                if (strncmp(left, "[root]", 6) == 0) {
+                        continue;
+                }
+
+                if (route_status) {
                         INFO_LOG("Routes: \"%s\" -> \"%s\"\n", left, right)
                 } else {
                         ERROR_LOG("Routes: could not route: \"%s\" -> \"%s\"\n", left, right)

@@ -10,13 +10,14 @@
 #include "global.h"
 
 #define MAX_ROUTES 100
-#define DEFAULT_ROUTE NULL
 
 typedef struct {
         char src[MAX_STRING_LENGTH];
         char target[MAX_STRING_LENGTH];
 } route_entry;
 
+extern _Bool route_directory_set;
+extern char route_directory[];
 extern route_entry routes[];
 extern unsigned long route_count;
 
