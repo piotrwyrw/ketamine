@@ -22,7 +22,7 @@ _Bool route(char *src, char *target)
 
         if (strncmp(src, "[root]", 6) == 0) {
                 if (route_directory_set) {
-                        ERROR_LOG("Route root directory is already set; cannot overwrite.\n")
+                        ERROR_LOG("Route root directory is already set - cannot overwrite.\n")
                         return false;
                 }
                 strncpy(route_directory, target, MAX_STRING_LENGTH);

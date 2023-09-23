@@ -17,7 +17,7 @@ _Note: The parser for the routes file is very simple to enhance stability. It th
 whitespaces, or other code beauty measures. It really must just be continuous lines of colon-separated key-value
 pairs._
 
-The **requested** is the requested file or path, and **target** is what it should be mapped to.
+The **requested** field is the requested file or path, and **target** is what it should be mapped to.
 Usually, the **requested** field corresponds to a regular path. There are, however, some builtin ketamine-intrinsic
 routes
 which have special meanings:
