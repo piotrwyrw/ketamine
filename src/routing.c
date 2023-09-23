@@ -40,6 +40,10 @@ _Bool route(char *src, char *target)
 
 char *resolve_route_raw(char *src)
 {
+        if (!src) {
+                return NULL;
+        }
+
         size_t src_len = strnlen(src, MAX_STRING_LENGTH);
 
         for (unsigned long i = 0; i < route_count; i++) {
