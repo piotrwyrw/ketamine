@@ -31,16 +31,6 @@ typedef struct {
         request_status req;
 } client_handle;
 
-_Bool is_running();
-
-void request_server_shutdown();
-
-unsigned long get_running_threads();
-
-void increment_running_threads();
-
-void decrement_running_threads();
-
 client_handle *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr_len);
 
 void free_connection(client_handle *conn);

@@ -16,4 +16,6 @@ add_executable(ketamine src/main.c
         src/routing.c
         src/cfgroute.h
         src/cfgroute.c
+        src/threadsafe.c
+        src/threadsafe.h
 )

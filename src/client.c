@@ -16,6 +16,7 @@
 #include "fio.h"
 #include "client.h"
 #include "routing.h"
+#include "threadsafe.h"
 
 // Respond to a HTTP GET request
 request_status respond_get(int sockd, char *req, client_handle *handle)
