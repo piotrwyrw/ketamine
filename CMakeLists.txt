@@ -7,7 +7,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
 
 set(KETAMINE_SOURCES src/main.c
-        src/request.c
+        src/http/http.c
         src/global.h
         src/gplogging.h
         src/global.c

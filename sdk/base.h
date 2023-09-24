@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #include "../src/server.h"
-#include "../src/request.h"
+#include "../src/http/http.h"
 
 #define ModuleInit void kModule_Init()
 #define MODULE_INIT_FUNCTION "kModule_Init"

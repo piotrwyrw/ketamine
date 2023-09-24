@@ -13,7 +13,7 @@
 #include "slog.h"
 #include "gplogging.h"
 #include "global.h"
-#include "request.h"
+#include "http/http.h"
 #include "fio.h"
 #include "client.h"
 #include "routing.h"

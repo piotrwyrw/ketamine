@@ -2,10 +2,10 @@
 // Created by Piotr Krzysztof Wyrwas on 19.09.23.
 //
 
-#include "request.h"
-#include "global.h"
-#include "parse.h"
-#include "gplogging.h"
+#include "http.h"
+#include "../global.h"
+#include "../parse.h"
+#include "../gplogging.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -195,4 +195,65 @@ void request_dealloc(http_request *request)
         }
 
         free(request->data);
+}
+
+int simple_http_response(http_response *target, unsigned int code, const char *msg)
+{
+        if (!target) {
+                return -1;
+        }
+
+        if (!msg) {
+                return -1;
+        }
+
+        strncpy(target->status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
+        target->status_code = code;
+
+        target->body = NULL;
+        target->body_length = 0;
+
+        return 0;
+}
+
+void response_dealloc(http_response *response)
+{
+        if (!response) {
+                return;
+        }
+
+        if (!response->body) {
+                return;
+        }
+
+        free(response->body);
+}
+
+/**
+ * @param resp
+ * @return A dynamically allocated HTTP response string or <b>NULL</b> if something were to go wrong
+ */
+char *http_response_string(http_response *resp)
+{
+        if (!resp) {
+                return NULL;
+        }
+
+        if (strnlen(resp->status_message, MAX_STATUS_MESSAGE_LENGTH) == 0) {
+                return NULL;
+        }
+
+        char *str;
+
+        if (resp->body && resp->body > 0) {
+                str = calloc(resp->body_length + MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
+                sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\nContent-Length: %ld\r\n\r\n%s", resp->status_code,
+                        resp->status_message, resp->body_length, resp->body);
+                return str;
+        }
+
+        str = calloc(MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
+        sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\n\r\n", resp->status_code, resp->status_message);
+        return str;
+
 }

@@ -6,7 +6,7 @@
 #define KETAMINE_MODULES_H
 
 #include "../global.h"
-#include "../request.h"
+#include "../http/http.h"
 
 typedef struct {
         char import_name[MAX_STRING_LENGTH];
