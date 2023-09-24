@@ -80,6 +80,7 @@ int load_module_symbols(dynamic_module *module)
 
         TRY(load_module_symbol(module->handle, (void **) &(module->init), MODULE_INIT_FUNCTION, true))
         load_module_symbol(module->handle, (void **) &(module->route_override), MODULE_ROUTE_OVERRIDE, false);
+        load_module_symbol(module->handle, (void **) &(module->get_hook), MODULE_GET_HOOK, false);
 
         return 0;
 }

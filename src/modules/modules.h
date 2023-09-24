@@ -6,6 +6,7 @@
 #define KETAMINE_MODULES_H
 
 #include "../global.h"
+#include "../request.h"
 
 typedef struct {
         char import_name[MAX_STRING_LENGTH];
@@ -14,6 +15,8 @@ typedef struct {
         void (*init)();
 
         char *(*route_override)(char *);
+
+        char *(*get_hook)(http_request *);
 } dynamic_module;
 
 extern dynamic_module loaded_modules[];

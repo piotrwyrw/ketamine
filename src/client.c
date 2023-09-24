@@ -18,6 +18,7 @@
 #include "client.h"
 #include "routing.h"
 #include "threadsafe.h"
+#include "modules/middleware.h"
 
 // Respond to a HTTP GET request
 request_status respond_get(int sockd, char *req, client_handle *handle)
@@ -33,6 +34,8 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 #endif
 
         http_request request;
+        char *http_response;
+        size_t response_length;
 
         if (parse_request(req, handle, &request) < 0) {
                 CONNECTION_ERROR(handle, "Could not parse incoming request\n");
@@ -54,6 +57,25 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 CONNECTION_LOG(handle, "Routing \"%s\" -> \"%s\"\n", file, route_target)
                 file = route_target;
         }
+
+        // Run the modular middleware
+        char *tmp = run_get_hook(&request);
+
+        if (!tmp) {
+                goto continue_regular_flow;
+        }
+
+        http_response = strdup(tmp);
+
+        // Here we unfortunately have to use `strlen` instead of the safer `strnlen`, since we cannot
+        // limit the length of the response as this would significantly impact the abilities of this server.
+        // I guess it's not a HUGE problem though, since when the user installs a module, which is inherently a bit risky,
+        // they willingly accept this degree of risk. This also applies to the above `strdup` function.
+        response_length = strlen(http_response);
+
+        goto send_and_close;
+
+        continue_regular_flow:
 
         // Special cases if no routes were resolved
         if (!route_target) {
@@ -94,8 +116,8 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file);
 
-        size_t response_length = handle->file_size + 100;
-        char *http_response = calloc(response_length, sizeof(char));
+        response_length = handle->file_size + 100;
+        http_response = calloc(response_length, sizeof(char));
 
         if (!http_response) {
                 ERROR_LOG("Failed to allocate memory for HTTP response.\n")
@@ -107,6 +129,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                  handle->file_size,
                  handle->file_buffer);
 
+        send_and_close:
 
         status = send(sockd, http_response, strnlen(http_response, response_length), 0) >= 0 ? 0 : -1;
         if (status < 0) {

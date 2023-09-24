@@ -2,7 +2,7 @@
 // Created by Piotr Krzysztof Wyrwas on 23.09.23.
 //
 
-#include "overrides.h"
+#include "middleware.h"
 #include "modules.h"
 
 char *resolve_route_override(char *src)
@@ -15,6 +15,27 @@ char *resolve_route_override(char *src)
                 }
 
                 char *override = (*plugin_override)(src);
+
+                if (!override) {
+                        continue;
+                }
+
+                return override;
+        }
+
+        return NULL;
+}
+
+char *run_get_hook(http_request *req)
+{
+        for (unsigned long i = 0; i < modules_count; i++) {
+                char *(*get_hook)(http_request *) = loaded_modules[i].get_hook;
+
+                if (!get_hook) {
+                        continue;
+                }
+
+                char *override = (*get_hook)(req);
 
                 if (!override) {
                         continue;

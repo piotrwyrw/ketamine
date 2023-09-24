@@ -28,8 +28,8 @@ set(KETAMINE_SOURCES src/main.c
         src/example.c
         example_plugin/plugin.c
         sdk/base.h
-        src/modules/overrides.h
-        src/modules/overrides.c
+        src/modules/middleware.h
+        src/modules/middleware.c
         src/slog.h
         sdk/sdk.h
         sdk/logging.h
