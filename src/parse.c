@@ -6,40 +6,59 @@
 #include "global.h"
 #include "gplogging.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-char identifier_buffer[MAX_STRING_LENGTH] = {0};
 
 /**
  * @param   str - The string to be parsed
  * @return  <b>On Success</b> - A pointer to the next character after the identifier.
  *          <b>On Failure</b> - NULL, if <b>str</b> is NULL.
  */
-char *identifier(const char *str)
+char *identifier(char *str, client_handle *handle)
 {
         // Clear the identifier buffer before scanning a new one
-        memset(identifier_buffer, 0, MAX_STRING_LENGTH);
+        memset(handle->parser_buffer, 0, MAX_STRING_LENGTH);
 
         if (!str) {
                 return NULL;
         }
 
-        char *ptr = identifier_buffer;
+        char *ptr = handle->parser_buffer;
 
         while (IS_LETTER(*str)) {
                 *(ptr++) = *(str++);
-                if (ptr - identifier_buffer > MAX_STRING_LENGTH) {
+                if (ptr - handle->parser_buffer > MAX_STRING_LENGTH) {
                         ERROR_LOG("Failed while parsing identifier as it exceeds the allowed string length bounds.\n")
                         return NULL;
                 }
         }
 
-        return ptr;
+        return str;
 }
 
-inline _Bool identifier_is(const char *str)
+void remove_leading_spaces(char **str)
 {
-        return strncmp(identifier_buffer, str, MAX_STRING_LENGTH) == 0;
+        if (!str) {
+                return;
+        }
+
+        if (!*str) {
+                return;
+        }
+
+        unsigned long length;
+
+        if ((length = strnlen(*str, MAX_STRING_LENGTH)) == 0) {
+                return;
+        }
+
+        while (IS_SPACE(**str)) {
+                (*str)++;
+
+                // Ensure we don't go out of range
+                length--;
+                if (length == 0) {
+                        break;
+                }
+        }
 }

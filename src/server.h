@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "client.h"
+#include "global.h"
 
 extern const char *http_not_found;
 extern int server_sockd;
@@ -27,6 +28,8 @@ typedef struct {
 
         char *file_buffer;
         unsigned long file_size;
+
+        char parser_buffer[MAX_STRING_LENGTH];
 
         request_status req;
 } client_handle;

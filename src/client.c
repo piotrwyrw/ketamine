@@ -32,18 +32,19 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         }
 #endif
 
-        char *file = parse_request(req, handle);
+        http_request request;
 
-        if (!file) {
+        if (parse_request(req, handle, &request) < 0) {
                 CONNECTION_ERROR(handle, "Could not parse incoming request\n");
                 return ERR;
         }
 
+        char *file = request.path;
         size_t file_len;
 
         if ((file_len = strnlen(file, MAX_STRING_LENGTH)) == 0) {
-                CONNECTION_ERROR(handle, "An error occurred while parsing the GET request\n");
-                return ERR;
+                CONNECTION_ERROR(handle, "An error occurred while parsing the request\n");
+                goto return_error;
         }
 
         // Note: This function may return NULL, if no explicit routes are present
@@ -81,8 +82,13 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file);
 
                 status = send(sockd, http_not_found, strnlen(http_not_found, MAX_STRING_LENGTH), 0) >= 0 ? 0 : -1;
+                if (status < 0) {
+                        request_dealloc(&request);
+                }
+
                 HANDLE_ERRORS("send(404)", status)
 
+                request_dealloc(&request);
                 return RESOURCE_UNAVAILABLE;
         }
 
@@ -93,7 +99,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         if (!http_response) {
                 ERROR_LOG("Failed to allocate memory for HTTP response.\n")
-                return ERR;
+                goto return_error;
         }
 
         snprintf(http_response, response_length,
@@ -103,11 +109,19 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
 
         status = send(sockd, http_response, strnlen(http_response, response_length), 0) >= 0 ? 0 : -1;
+        if (status < 0) {
+                request_dealloc(&request);
+        }
         HANDLE_ERRORS("send", status)
 
+        request_dealloc(&request);
         free(http_response);
 
         return GET_OK;
+
+        return_error:
+        request_dealloc(&request);
+        return ERR;
 }
 
 void *handle_client_connection(void *param)

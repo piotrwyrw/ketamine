@@ -15,13 +15,16 @@ typedef enum {
 } http_method;
 
 typedef struct {
-        char header[MAX_STRING_LENGTH];
+        char field[MAX_STRING_LENGTH];
         char value[MAX_STRING_LENGTH];
 } http_header;
 
 typedef struct {
+        char path[MAX_STRING_LENGTH];
+
         http_method method;
         http_header headers[MAX_HEADER_COUNT];
+        unsigned int header_count;
 
         unsigned long data_length;
         char *data;
@@ -29,6 +32,8 @@ typedef struct {
 
 http_method get_method(char *str);
 
-char *parse_request(char *req, client_handle *handle);
+int parse_request(char *req, client_handle *handle, http_request *target);
+
+void request_dealloc(http_request *request);
 
 #endif //KETAMINE_REQUEST_H
