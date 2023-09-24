@@ -4,6 +4,8 @@
 
 #include "request.h"
 #include "global.h"
+#include "parse.h"
+#include "gplogging.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -34,6 +36,8 @@ char *parse_request(char *req, client_handle *handle)
 
         char *line, *token;
 
+        http_method method = METHOD_INVALID;
+
         next_line:
         line = strsep(&req, "\n\r");
 
@@ -41,8 +45,20 @@ char *parse_request(char *req, client_handle *handle)
                 goto done;
         }
 
-        if (strnlen(line, MAX_STRING_LENGTH) > 0) {
-                printf("%s\n", line);
+        if (strnlen(line, MAX_STRING_LENGTH) == 0) {
+                goto next_line;
+        }
+
+        if (method == METHOD_INVALID) {
+                if (!identifier(line)) {
+                        ERROR_LOG("Failed to parse request: Could not parse method identifier.\n")
+                        return NULL;
+                }
+                method = get_method(identifier_buffer);
+                if (method == METHOD_INVALID) {
+                        ERROR_LOG("Could not recognise method: \"%s\".\n", identifier_buffer);
+                        return NULL;
+                }
         }
 
         goto next_line;

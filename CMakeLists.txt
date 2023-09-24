@@ -27,14 +27,16 @@ set(KETAMINE_SOURCES src/main.c
         src/modules/modules.c
         src/example.c
         example_plugin/plugin.c
-        sdk/base.h)
-
-add_executable(ketamine ${KETAMINE_SOURCES}
+        sdk/base.h
         src/modules/overrides.h
         src/modules/overrides.c
         src/slog.h
         sdk/sdk.h
-        sdk/logging.h)
+        sdk/logging.h
+        src/parse.h
+        src/parse.c)
+
+add_executable(ketamine ${KETAMINE_SOURCES})
 
 add_library(libketamine STATIC ${KETAMINE_SOURCES})
 set_target_properties(libketamine PROPERTIES OUTPUT_NAME "libketamine" PREFIX "")
