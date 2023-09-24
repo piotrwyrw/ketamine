@@ -13,7 +13,9 @@
 #define INDEX_FILE_NAME "index.html"
 #define ROUTES_FILE_NAME "routes"
 #define LISTEN_PORT 80
+
 #define MAX_STRING_LENGTH 100
+#define MAX_HEADER_COUNT 50
 #define CONNECTION_LIMIT 10
 
 #define MAX_ROUTES 100
