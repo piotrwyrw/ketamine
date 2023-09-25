@@ -293,24 +293,35 @@ char *http_unit_string(http_unit *resp)
                 return NULL;
         }
 
-        // TODO Check the math below a couple of time more
+        // Unsigned long has a max of 10 digits
+        // ->   The first line of the response will not exceed
+        //      MAX_STATUS_MESSAGE_LENGTH + 10 (status code) + 20 (just some buffer, including the '\r\n')
+        // ->   Each header entry will not exceed 2 * MAX_STRING_LENGTH (key, value) + 8 (again, some buffer, just in case)
+        // ->   The data section has the precise length that is provided.
+        unsigned long header_init = MAX_STATUS_MESSAGE_LENGTH + 30;
+        unsigned long header_size = 2 * MAX_STRING_LENGTH + 8;
+        unsigned long data_size = resp->data_length;
 
-        // Please don't ask about the way I calculate the required memory here ... PS: Lots of guessing
-        char *str = calloc(
-                MAX_STATUS_MESSAGE_LENGTH + 50 + resp->data_length + ((2 * MAX_STRING_LENGTH) * resp->header_count),
-                sizeof(char));
+        // Therefore, the entire HTTP response will not exceed
+        unsigned long resp_length = header_init + (resp->header_count * header_size) + data_size;
+
+        char *str = calloc(resp_length, sizeof(char));
+
+        if (!str) {
+                return NULL;
+        }
 
         sprintf(str, "HTTP/1.1 %d %s\r\n", resp->unit.response.status_code,
                 resp->unit.response.status_message);
 
-        unsigned long offset = strnlen(str, MAX_STATUS_MESSAGE_LENGTH + MAX_STRING_LENGTH);
+        unsigned long offset = strnlen(str, header_init);
 
         for (unsigned long i = 0; i < resp->header_count; i++) {
                 http_header *header = &(resp->headers[i]);
 
                 sprintf(str + offset, "%s: %s\r\n", header->field, header->value);
 
-                offset = strnlen(str, (2 * MAX_STRING_LENGTH) * resp->header_count);
+                offset = strnlen(str, header_size * (i + 1));
         }
 
         strncat(str + offset, "\r\n", 2);
