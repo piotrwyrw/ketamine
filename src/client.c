@@ -38,7 +38,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         char *response_str;
 
         if (parse_request(req, handle, &request) < 0) {
-                CONNECTION_ERROR(handle, "Could not parse incoming request\n");
+                CONNECTION_ERROR(handle, "Could not parse incoming request\n")
                 return ERR;
         }
 
@@ -46,7 +46,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         size_t file_len;
 
         if ((file_len = strnlen(file, MAX_STRING_LENGTH)) == 0) {
-                CONNECTION_ERROR(handle, "An error occurred while parsing the request\n");
+                CONNECTION_ERROR(handle, "An error occurred while parsing the request\n")
                 goto return_error;
         }
 
@@ -91,7 +91,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         int status = read_file(file, handle);
         if (status < 0) {
-                CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file);
+                CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file)
 
                 simple_http_response(&response, 404, "NOT_FOUND");
                 response_str = http_response_string(&response);
@@ -112,7 +112,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 return RESOURCE_UNAVAILABLE;
         }
 
-        CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file);
+        CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file)
 
         full_http_response(&response, 200, "OK", handle->file_buffer, handle->file_size);
 
@@ -144,7 +144,7 @@ void *handle_client_connection(void *param)
         int client_socket = handle->client_sockd;
         char buffer[1001] = {0};
 
-        CONNECTION_LOG(handle, "New connection established\n");
+        CONNECTION_LOG(handle, "New connection established\n")
 
         ssize_t req_size;
         handle->req = DEFAULT;
@@ -154,7 +154,7 @@ void *handle_client_connection(void *param)
 
         if (req_size < 0) {
                 if (!is_running()) {
-                        CONNECTION_LOG(handle, "Server thread was requested to terminate.\n");
+                        CONNECTION_LOG(handle, "Server thread was requested to terminate.\n")
                         goto close_session;
                 }
                 if ((errno == EWOULDBLOCK || errno == EAGAIN)) {
@@ -177,7 +177,7 @@ void *handle_client_connection(void *param)
 
         close_session:
         close(client_socket);
-        CONNECTION_LOG(handle, "Disconnected\n");
+        CONNECTION_LOG(handle, "Disconnected\n")
         request_status tmp_req = handle->req;
         free_connection(handle);
 

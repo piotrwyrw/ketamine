@@ -63,7 +63,7 @@ int load_routes_file(char *path)
                 }
         }
 
-        INFO_LOG("Done reading routes file.\n");
+        INFO_LOG("Done reading routes file.\n")
 
         free(base_buffer);
         return 0;

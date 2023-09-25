@@ -13,7 +13,7 @@ static int lock_global_mutex()
 {
         int status = pthread_mutex_lock(&global_mutex);
         if (status != 0) {
-                ERROR_LOG("Failed when trying to lock mutex: %d\n", status);
+                ERROR_LOG("Failed when trying to lock mutex: %d\n", status)
                 return -1;
         }
         return 0;

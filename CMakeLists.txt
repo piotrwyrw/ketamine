@@ -25,7 +25,6 @@ set(KETAMINE_SOURCES src/main.c
         src/threadsafe.h
         src/modules/modules.h
         src/modules/modules.c
-        src/example.c
         example_plugin/plugin.c
         sdk/base.h
         src/modules/middleware.h

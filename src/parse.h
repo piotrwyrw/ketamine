@@ -7,8 +7,8 @@
 
 #include "server.h"
 
-#define IS_LETTER(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-#define IS_SPACE(c) (c == ' ' || c == '\t' || c == '\n' || c == '\r')
+#define IS_LETTER(c) (((c) >= 'a' && (c) <= 'z') || ((c) >= 'A' && (c) <= 'Z'))
+#define IS_SPACE(c) ((c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r')
 
 char *identifier(char *str, client_handle *handle);
 

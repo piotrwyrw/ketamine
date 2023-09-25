@@ -27,7 +27,7 @@ _Bool route(char *src, char *target)
                         return false;
                 }
                 strncpy(route_directory, target, MAX_STRING_LENGTH);
-                INFO_LOG("Working directory set to \"%s\"\n", target);
+                INFO_LOG("Working directory set to \"%s\"\n", target)
                 route_directory_set = true;
                 return true;
         }

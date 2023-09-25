@@ -20,14 +20,14 @@ int load_module(char *name, char *path)
         }
 
         if (modules_count + 1 > MAX_DYNAMIC_MODULES) {
-                ERROR_LOG("Failed to load dynamic module: Number of loaded modules would exceed the allowed range.\n");
+                ERROR_LOG("Failed to load dynamic module: Number of loaded modules would exceed the allowed range.\n")
                 return -1;
         }
 
         void *handle = dlopen(path, RTLD_NOW | RTLD_LOCAL);
 
         if (!handle) {
-                ERROR_LOG("Failed to load dynamic module \"%s\" at \"%s\": %s\n", name, path, dlerror());
+                ERROR_LOG("Failed to load dynamic module \"%s\" at \"%s\": %s\n", name, path, dlerror())
                 return -1;
         }
 
@@ -40,7 +40,7 @@ int load_module(char *name, char *path)
                 return -1;
         }
 
-        INFO_LOG("Module loaded: %s (%s)\n", name, path);
+        INFO_LOG("Module loaded: %s (%s)\n", name, path)
 
         modules_count++;
 
@@ -57,7 +57,7 @@ static int load_module_symbol(void *handle, void **target, char *symbol, _Bool r
 
         if (!sym) {
                 if (required) {
-                        ERROR_LOG("Module symbol not found: %s\n", symbol);
+                        ERROR_LOG("Module symbol not found: %s\n", symbol)
                 }
                 return -1;
         }
@@ -74,7 +74,7 @@ static int load_module_symbol(void *handle, void **target, char *symbol, _Bool r
 int load_module_symbols(dynamic_module *module)
 {
         if (!module) {
-                ERROR_LOG("Could not load module callbacks: Module is NULL.\n");
+                ERROR_LOG("Could not load module callbacks: Module is NULL.\n")
                 return -1;
         }
 
@@ -98,7 +98,7 @@ void modules_init_all()
 void modules_unload_all()
 {
         if (modules_count == 0) {
-                INFO_LOG("No dynamic modules to unload.\n");
+                INFO_LOG("No dynamic modules to unload.\n")
                 return;
         }
 

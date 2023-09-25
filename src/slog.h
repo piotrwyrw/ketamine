@@ -8,7 +8,7 @@
 #define KETAMINE_SLOG_H
 
 #define HANDLE_ERRORS(tag, err) \
-        if (err < 0) {   \
+        if ((err) < 0) {   \
                 printf("[Error(%s)]: %s\n", tag, strerror(errno));            \
                 return -1; \
         }

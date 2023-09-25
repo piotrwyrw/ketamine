@@ -53,16 +53,3 @@ int read_file(char *path, client_handle *handle)
 {
         return read_file_to(path, &handle->file_buffer, &handle->file_size);
 }
-
-void free_file_buffer(client_handle *handle)
-{
-        if (handle->file_buffer == NULL) {
-                goto final;
-        }
-
-        free(handle->file_buffer);
-        handle->file_buffer = NULL;
-
-        final:
-        handle->file_size = 0;
-}

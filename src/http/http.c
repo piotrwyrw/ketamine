@@ -3,7 +3,6 @@
 //
 
 #include "http.h"
-#include "../global.h"
 #include "../parse.h"
 #include "../gplogging.h"
 
@@ -42,7 +41,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         }
 
 
-        char *line, *token;
+        char *line;
 
         request->header_count = 0;
         request->method = METHOD_INVALID;
@@ -85,7 +84,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
                 }
 
                 if (strnlen(nLinePtr, MAX_STRING_LENGTH) == 0) {
-                        ERROR_LOG("Request string ends after method.\n");
+                        ERROR_LOG("Request string ends after method.\n")
                         return -1;
                 }
 
@@ -113,7 +112,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         }
 
         if (request->header_count >= MAX_HEADER_COUNT) {
-                ERROR_LOG("Failed to parse headers: Maximum allowed number of headers would've been exceeded \n");
+                ERROR_LOG("Failed to parse headers: Maximum allowed number of headers would've been exceeded \n")
                 return -1;
         }
 
@@ -121,24 +120,24 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         char *key = strsep(&line, ":");
 
         if (!key) {
-                ERROR_LOG("Could not retrieve field key.\n");
+                ERROR_LOG("Could not retrieve field key.\n")
                 return -1;
         }
 
         if (strnlen(key, MAX_STRING_LENGTH) == 0) {
-                ERROR_LOG("Header key is empty.\n");
+                ERROR_LOG("Header key is empty.\n")
                 return -1;
         }
 
         char *value = strsep(&line, ":");
 
         if (!value) {
-                ERROR_LOG("Could not retrieve field value.\n");
+                ERROR_LOG("Could not retrieve field value.\n")
                 return -1;
         }
 
         if (strnlen(value, MAX_STRING_LENGTH) == 0) {
-                ERROR_LOG("Header value is empty.\n");
+                ERROR_LOG("Header value is empty.\n")
                 return -1;
         }
 
@@ -161,7 +160,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         request->data_length = strtoul(value, NULL, 10);
 
         if (request->data_length == ULONG_MAX && (errno == ERANGE || errno == EINVAL)) {
-                ERROR_LOG("Could not parse value of 'Content-Length' header as unsigned long.\n");
+                ERROR_LOG("Could not parse value of 'Content-Length' header as unsigned long.\n")
                 return -1;
         }
 
@@ -173,7 +172,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         request->data = calloc(request->data_length + 1, sizeof(char));
 
         if (!request->data) {
-                ERROR_LOG("Could not allocate memory buffer for request data.\n");
+                ERROR_LOG("Could not allocate memory buffer for request data.\n")
                 return -1;
         }
 
