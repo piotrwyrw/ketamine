@@ -14,21 +14,9 @@ ModuleRouteOverride(path)
         return NULL;
 }
 
-Get(req)
+Get(req, resp)
 {
-        if (strncmp(req->path, "/json", 4) != 0) {
-                return HTTP_NOT_FOUND (
-                               "<h1>404 Not found</h1>"
-                               "<span>There's nothing on this route.</span>"
-                       );
-        }
-
-        return HTTP_OK_JSON (
-                       "{"
-                       "  \"username\": \"iUseMacBtw\","
-                       "  \"password\": \"password123\""
-                       "}"
-               );
+        return -1;
 }
 
 ModuleInit

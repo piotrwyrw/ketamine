@@ -26,23 +26,19 @@ char *resolve_route_override(char *src)
         return NULL;
 }
 
-char *run_get_hook(http_request *req)
+int run_get_hook(http_request *req, http_response *resp)
 {
         for (unsigned long i = 0; i < modules_count; i++) {
-                char *(*get_hook)(http_request *) = loaded_modules[i].get_hook;
+                int (*get_hook)(http_request *, http_response *) = loaded_modules[i].get_hook;
 
                 if (!get_hook) {
                         continue;
                 }
 
-                char *override = (*get_hook)(req);
-
-                if (!override) {
-                        continue;
+                if ((*get_hook)(req, resp) == 0) {
+                        return 0;
                 }
-
-                return override;
         }
 
-        return NULL;
+        return -1;
 }

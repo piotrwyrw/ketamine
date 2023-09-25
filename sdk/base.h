@@ -16,7 +16,7 @@
 #define ModuleRouteOverride(param) char *kModule_RouteOverride(char *param)
 #define MODULE_ROUTE_OVERRIDE "kModule_RouteOverride"
 
-#define Get(request) char *kModule_GetHook(http_request *request)
+#define Get(request, response) int kModule_GetHook(http_request *request, http_response *response)
 #define MODULE_GET_HOOK "kModule_GetHook"
 
 #define HTTP_NOT_FOUND(...) "HTTP/1.1 404 NOT_FOUND\r\nContent-Type: text/html\r\n\r\n" __VA_ARGS__

@@ -199,11 +199,7 @@ void request_dealloc(http_request *request)
 
 int simple_http_response(http_response *target, unsigned int code, const char *msg)
 {
-        if (!target) {
-                return -1;
-        }
-
-        if (!msg) {
+        if (!target || !msg) {
                 return -1;
         }
 
@@ -212,6 +208,34 @@ int simple_http_response(http_response *target, unsigned int code, const char *m
 
         target->body = NULL;
         target->body_length = 0;
+
+        return 0;
+}
+
+int full_http_response(http_response *target, unsigned int code, const char *msg, char *body, unsigned int body_length)
+{
+        if (!target || !msg) {
+                return -1;
+        }
+
+        if (!body || body_length == 0) {
+                return simple_http_response(target, code, msg);
+        }
+
+        target->status_code = code;
+        strncpy(target->status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
+
+        // Yes, the null terminator is totally pointless in case of binary data, but
+        // let's leave it in there just in case.
+        target->body = calloc(body_length + 1, sizeof(char));
+
+        if (!target->body) {
+                ERROR_LOG("Could not allocate memory for HTTP response body.\n")
+                return -1;
+        }
+
+        memcpy(target->body, body, body_length);
+        target->body_length = body_length;
 
         return 0;
 }
@@ -247,13 +271,24 @@ char *http_response_string(http_response *resp)
 
         if (resp->body && resp->body > 0) {
                 str = calloc(resp->body_length + MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
-                sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\nContent-Length: %ld\r\n\r\n%s", resp->status_code,
-                        resp->status_message, resp->body_length, resp->body);
+                sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\nContent-Length: %ld\r\n\r\n", resp->status_code,
+                        resp->status_message, resp->body_length);
+                resp->header_length = strnlen(str, MAX_STRING_LENGTH);
+                memcpy(str + resp->header_length, resp->body, resp->body_length);
                 return str;
         }
 
         str = calloc(MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
         sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\n\r\n", resp->status_code, resp->status_message);
+        resp->header_length = strnlen(str, MAX_STRING_LENGTH);
         return str;
+}
 
+unsigned int http_response_length(http_response *resp)
+{
+        if (!resp) {
+                return 0;
+        }
+
+        return resp->body_length + resp->header_length;
 }

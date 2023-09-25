@@ -9,6 +9,6 @@
 
 char *resolve_route_override(char *src);
 
-char *run_get_hook(http_request *req);
+int run_get_hook(http_request *req, http_response *resp);
 
 #endif //KETAMINE_MIDDLEWARE_H

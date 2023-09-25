@@ -36,6 +36,8 @@ typedef struct {
 
         unsigned long body_length;
         char *body;
+
+        unsigned long header_length;
 } http_response;
 
 http_method get_method(char *str);
@@ -46,8 +48,12 @@ void request_dealloc(http_request *request);
 
 int simple_http_response(http_response *target, unsigned int code, const char *msg);
 
+int full_http_response(http_response *target, unsigned int code, const char *msg, char *body, unsigned int body_length);
+
 void response_dealloc(http_response *response);
 
 char *http_response_string(http_response *resp);
+
+unsigned int http_response_length(http_response *resp);
 
 #endif //KETAMINE_HTTP_H

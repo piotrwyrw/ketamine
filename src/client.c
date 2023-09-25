@@ -34,8 +34,8 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 #endif
 
         http_request request;
-        char *http_response;
-        size_t response_length;
+        http_response response;
+        char *response_str;
 
         if (parse_request(req, handle, &request) < 0) {
                 CONNECTION_ERROR(handle, "Could not parse incoming request\n");
@@ -59,19 +59,9 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         }
 
         // Run the modular middleware
-        char *tmp = run_get_hook(&request);
-
-        if (!tmp) {
+        if (run_get_hook(&request, &response) < 0) {
                 goto continue_regular_flow;
         }
-
-        http_response = strdup(tmp);
-
-        // Here we unfortunately have to use `strlen` instead of the safer `strnlen`, since we cannot
-        // limit the length of the response as this would significantly impact the abilities of this server.
-        // I guess it's not a HUGE problem though, since when the user installs a module, which is inherently a bit risky,
-        // they willingly accept this degree of risk. This also applies to the above `strdup` function.
-        response_length = strlen(http_response);
 
         goto send_and_close;
 
@@ -103,42 +93,42 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         if (status < 0) {
                 CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file);
 
-                status = send(sockd, http_not_found, strnlen(http_not_found, MAX_STRING_LENGTH), 0) >= 0 ? 0 : -1;
+                simple_http_response(&response, 404, "NOT_FOUND");
+                response_str = http_response_string(&response);
+
+                status = send(sockd, response_str, http_response_length(&response), 0) >= 0 ? 0 : -1;
                 if (status < 0) {
                         request_dealloc(&request);
+                        response_dealloc(&response);
+                        free(response_str);
                 }
 
                 HANDLE_ERRORS("send(404)", status)
 
                 request_dealloc(&request);
+                response_dealloc(&response);
+                free(response_str); // No it may not: It's only freed if (status < 0), which is also when the error handler gets triggered
+
                 return RESOURCE_UNAVAILABLE;
         }
 
         CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file);
 
-        response_length = handle->file_size + 100;
-        http_response = calloc(response_length, sizeof(char));
-
-        if (!http_response) {
-                ERROR_LOG("Failed to allocate memory for HTTP response.\n")
-                goto return_error;
-        }
-
-        snprintf(http_response, response_length,
-                 "HTTP/1.1 200 OK\r\nContent-Length: %ld\r\nAccept-Ranges: bytes\r\nConnection: Closed\r\n\r\n%s",
-                 handle->file_size,
-                 handle->file_buffer);
+        full_http_response(&response, 200, "OK", handle->file_buffer, handle->file_size);
 
         send_and_close:
-
-        status = send(sockd, http_response, strnlen(http_response, response_length), 0) >= 0 ? 0 : -1;
+        response_str = http_response_string(&response);
+        status = send(sockd, response_str, http_response_length(&response), 0) >= 0 ? 0 : -1;
         if (status < 0) {
                 request_dealloc(&request);
+                response_dealloc(&response);
+                free(response_str);
         }
         HANDLE_ERRORS("send", status)
 
         request_dealloc(&request);
-        free(http_response);
+        response_dealloc(&response);
+        free(response_str); // Again, it may NOT point to deallocated memory.
 
         return GET_OK;
 
