@@ -6,7 +6,7 @@
 #define KETAMINE_SDK_H
 
 #ifndef KetamineModuleName
-        #error Please define KetamineModuleName before including the base SDK header.
+        #error Please define KetamineModuleName as a string literal before including the base SDK header.
 #endif
 
 #include "base.h"

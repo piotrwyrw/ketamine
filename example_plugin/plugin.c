@@ -8,15 +8,24 @@
 
 #include <string.h>
 
-ModuleRouteOverride(path)
+RouteMapping(Greeting, req, resp)
 {
-        ModuleLog("A client requested the resource \"%s\"\n", path)
-        return NULL;
+        char *message = "Hello, World!\n";
+        full_http_response(resp, 200, "OK", message, strnlen(message, MAX_STRING_LENGTH));
+        return 0;
+}
+
+RouteMapping(Default, req, resp)
+{
+        char *message = "Nothing interesting here.";
+        full_http_response(resp, 200, "ERR", message, strnlen(message, MAX_STRING_LENGTH));
+        return 0;
 }
 
 Get(req, resp)
 {
-        return -1;
+        MapRoute("/greeting", req, resp, Greeting)
+        ForceRoute(req, resp, Default)
 }
 
 ModuleInit

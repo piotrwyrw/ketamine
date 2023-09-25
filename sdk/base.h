@@ -19,9 +19,15 @@
 #define Get(request, response) int kModule_GetHook(http_request *request, http_response *response)
 #define MODULE_GET_HOOK "kModule_GetHook"
 
-#define HTTP_NOT_FOUND(...) "HTTP/1.1 404 NOT_FOUND\r\nContent-Type: text/html\r\n\r\n" __VA_ARGS__
+#define MapRoute(route, request, response, identifier) \
+        if (strncmp(request->path, route, strnlen(route, MAX_STRING_LENGTH)) == 0) { \
+                return kRouteMapping_##identifier(request, response); \
+        }
 
-#define HTTP_OK(...) "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n" __VA_ARGS__
-#define HTTP_OK_JSON(...) "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n" __VA_ARGS__
+#define ForceRoute(request, response, identifier) \
+        return kRouteMapping_##identifier(request, response);
+
+#define RouteMapping(identifier, request, response) \
+        int kRouteMapping_##identifier(http_request *request, http_response *response)
 
 #endif //KETAMINE_BASE_H
