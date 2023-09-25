@@ -16,7 +16,7 @@ typedef struct {
 
         char *(*route_override)(char *);
 
-        int (*get_hook)(http_request *, http_response *);
+        int (*get_hook)(http_unit *, http_unit *);
 } dynamic_module;
 
 extern dynamic_module loaded_modules[];

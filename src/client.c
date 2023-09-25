@@ -33,8 +33,8 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         }
 #endif
 
-        http_request request;
-        http_response response;
+        http_unit request = {.type = UNIT_REQUEST};
+        http_unit response = {.type = UNIT_RESPONSE};
         char *response_str;
 
         if (parse_request(req, handle, &request) < 0) {
@@ -42,7 +42,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 return ERR;
         }
 
-        char *file = request.path;
+        char *file = request.unit.request.path;
         size_t file_len;
 
         if ((file_len = strnlen(file, MAX_STRING_LENGTH)) == 0) {
@@ -94,19 +94,19 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file)
 
                 simple_http_response(&response, 404, "NOT_FOUND");
-                response_str = http_response_string(&response);
+                response_str = http_unit_string(&response);
 
                 status = send(sockd, response_str, http_response_length(&response), 0) >= 0 ? 0 : -1;
                 if (status < 0) {
-                        request_dealloc(&request);
-                        response_dealloc(&response);
+                        unit_dealloc(&request);
+                        unit_dealloc(&response);
                         free(response_str);
                 }
 
                 HANDLE_ERRORS("send(404)", status)
 
-                request_dealloc(&request);
-                response_dealloc(&response);
+                unit_dealloc(&request);
+                unit_dealloc(&response);
                 free(response_str); // No it may not: It's only freed if (status < 0), which is also when the error handler gets triggered
 
                 return RESOURCE_UNAVAILABLE;
@@ -117,23 +117,23 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         full_http_response(&response, 200, "OK", handle->file_buffer, handle->file_size);
 
         send_and_close:
-        response_str = http_response_string(&response);
+        response_str = http_unit_string(&response);
         status = send(sockd, response_str, http_response_length(&response), 0) >= 0 ? 0 : -1;
         if (status < 0) {
-                request_dealloc(&request);
-                response_dealloc(&response);
+                unit_dealloc(&request);
+                unit_dealloc(&response);
                 free(response_str);
         }
         HANDLE_ERRORS("send", status)
 
-        request_dealloc(&request);
-        response_dealloc(&response);
+        unit_dealloc(&request);
+        unit_dealloc(&response);
         free(response_str); // Again, it may NOT point to deallocated memory.
 
         return GET_OK;
 
         return_error:
-        request_dealloc(&request);
+        unit_dealloc(&request);
         return ERR;
 }
 

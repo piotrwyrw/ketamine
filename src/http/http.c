@@ -25,7 +25,7 @@ http_method get_method(char *str)
 }
 
 // Parse an HTTP request
-int parse_request(char *req, client_handle *handle, http_request *request)
+int parse_request(char *req, client_handle *handle, http_unit *request)
 {
         // Sanity checks before parsing
         if (!req || !handle) {
@@ -40,11 +40,15 @@ int parse_request(char *req, client_handle *handle, http_request *request)
                 return -1;
         }
 
+        if (request->type != UNIT_REQUEST) {
+                return 01;
+        }
+
 
         char *line;
 
         request->header_count = 0;
-        request->method = METHOD_INVALID;
+        request->unit.request.method = METHOD_INVALID;
         request->data = NULL;
 
         // Scan the request line-by-line
@@ -61,7 +65,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         }
 
         // Parse the first request line (e.g. GET / HTTP/1.1)
-        if (request->method == METHOD_INVALID) {
+        if (request->unit.request.method == METHOD_INVALID) {
                 char *nLinePtr;
 
                 // Find the method
@@ -70,9 +74,9 @@ int parse_request(char *req, client_handle *handle, http_request *request)
                         return -1;
                 }
 
-                request->method = get_method(handle->parser_buffer);
+                request->unit.request.method = get_method(handle->parser_buffer);
 
-                if (request->method == METHOD_INVALID) {
+                if (request->unit.request.method == METHOD_INVALID) {
                         ERROR_LOG("Could not recognise method: \"%s\".\n", handle->parser_buffer)
                         return -1;
                 }
@@ -100,7 +104,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
                         return -1;
                 }
 
-                strncpy(request->path, path, MAX_STRING_LENGTH);
+                strncpy(request->unit.request.path, path, MAX_STRING_LENGTH);
 
                 goto next_line;
         }
@@ -182,20 +186,7 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         return 0;
 }
 
-void request_dealloc(http_request *request)
-{
-        if (!request->data) {
-                return;
-        }
-
-        if (!request->data_length) {
-                return;
-        }
-
-        free(request->data);
-}
-
-http_header *request_find_header(http_request *request, char *key)
+http_header *request_find_header(http_unit *request, char *key)
 {
         if (!request || !key) {
                 return NULL;
@@ -212,22 +203,26 @@ http_header *request_find_header(http_request *request, char *key)
         return NULL;
 }
 
-int simple_http_response(http_response *target, unsigned int code, const char *msg)
+int simple_http_response(http_unit *target, unsigned int code, const char *msg)
 {
         if (!target || !msg) {
                 return -1;
         }
 
-        strncpy(target->status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
-        target->status_code = code;
+        if (target->type != UNIT_RESPONSE) {
+                return -1;
+        }
 
-        target->body = NULL;
-        target->body_length = 0;
+        strncpy(target->unit.response.status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
+        target->unit.response.status_code = code;
+
+        target->data = NULL;
+        target->data_length = 0;
 
         return 0;
 }
 
-int full_http_response(http_response *target, unsigned int code, const char *msg, char *body, unsigned int body_length)
+int full_http_response(http_unit *target, unsigned int code, const char *msg, char *body, unsigned int body_length)
 {
         if (!target || !msg) {
                 return -1;
@@ -237,73 +232,87 @@ int full_http_response(http_response *target, unsigned int code, const char *msg
                 return simple_http_response(target, code, msg);
         }
 
-        target->status_code = code;
-        strncpy(target->status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
+        if (target->type != UNIT_RESPONSE) {
+                return -1;
+        }
+
+        target->unit.response.status_code = code;
+        strncpy(target->unit.response.status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
 
         // Yes, the null terminator is totally pointless in case of binary data, but
         // let's leave it in there just in case.
-        target->body = calloc(body_length + 1, sizeof(char));
+        target->data = calloc(body_length + 1, sizeof(char));
 
-        if (!target->body) {
+        if (!target->data) {
                 ERROR_LOG("Could not allocate memory for HTTP response body.\n")
                 return -1;
         }
 
-        memcpy(target->body, body, body_length);
-        target->body_length = body_length;
+        memcpy(target->data, body, body_length);
+        target->data_length = body_length;
 
         return 0;
 }
 
-void response_dealloc(http_response *response)
+void unit_dealloc(http_unit *response)
 {
         if (!response) {
                 return;
         }
 
-        if (!response->body) {
+        if (!response->data) {
                 return;
         }
 
-        free(response->body);
+        free(response->data);
 }
 
 /**
  * @param resp
  * @return A dynamically allocated HTTP response string or <b>NULL</b> if something were to go wrong
  */
-char *http_response_string(http_response *resp)
+char *http_unit_string(http_unit *resp)
 {
         if (!resp) {
                 return NULL;
         }
 
-        if (strnlen(resp->status_message, MAX_STATUS_MESSAGE_LENGTH) == 0) {
+        if (resp->type != UNIT_RESPONSE) {
+                return NULL;
+        }
+
+        if (strnlen(resp->unit.response.status_message, MAX_STATUS_MESSAGE_LENGTH) == 0) {
                 return NULL;
         }
 
         char *str;
 
-        if (resp->body && resp->body > 0) {
-                str = calloc(resp->body_length + MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
-                sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\nContent-Length: %ld\r\n\r\n", resp->status_code,
-                        resp->status_message, resp->body_length);
-                resp->header_length = strnlen(str, MAX_STRING_LENGTH);
-                memcpy(str + resp->header_length, resp->body, resp->body_length);
+        if (resp->data && resp->data_length > 0) {
+                str = calloc(resp->data_length + MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
+                sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\nContent-Length: %ld\r\n\r\n",
+                        resp->unit.response.status_code,
+                        resp->unit.response.status_message, resp->data_length);
+                resp->unit.response.header_length = strnlen(str, MAX_STRING_LENGTH);
+                memcpy(str + resp->unit.response.header_length, resp->data, resp->data_length);
                 return str;
         }
 
         str = calloc(MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
-        sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\n\r\n", resp->status_code, resp->status_message);
-        resp->header_length = strnlen(str, MAX_STRING_LENGTH);
+        sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\n\r\n", resp->unit.response.status_code,
+                resp->unit.response.status_message);
+        resp->unit.response.header_length = strnlen(str, MAX_STRING_LENGTH);
         return str;
 }
 
-unsigned int http_response_length(http_response *resp)
+unsigned int http_response_length(http_unit *resp)
 {
         if (!resp) {
                 return 0;
         }
 
-        return resp->body_length + resp->header_length;
+        if (resp->type != UNIT_RESPONSE) {
+                return -1;
+        }
+
+        return resp->data_length + resp->unit.response.header_length;
 }

@@ -19,43 +19,55 @@ typedef struct {
         char value[MAX_STRING_LENGTH];
 } http_header;
 
-typedef struct {
-        char path[MAX_STRING_LENGTH];
+typedef enum {
+        UNIT_INVALID,
+        UNIT_REQUEST,
+        UNIT_RESPONSE
+} http_unit_type;
 
-        http_method method;
+typedef struct {
+        http_unit_type type;
+
         http_header headers[MAX_HEADER_COUNT];
         unsigned int header_count;
 
         unsigned long data_length;
         char *data;
-} http_request;
 
-typedef struct {
-        unsigned int status_code;
-        char status_message[MAX_STATUS_MESSAGE_LENGTH];
+        union {
+                struct {
+                        char path[MAX_STRING_LENGTH];
+                        http_method method;
+                } request;
 
-        unsigned long body_length;
-        char *body;
+                struct {
+                        unsigned int status_code;
+                        char status_message[MAX_STATUS_MESSAGE_LENGTH];
 
-        unsigned long header_length;
-} http_response;
+                        /**
+                         * Now that the header length is also a thing with requests, i.e. that they also have a header
+                         * that has a defined length. In this case, however, we don't really care about the header length
+                         * of the request - the parser will do just fine without this information.
+                         */
+                        unsigned long header_length;
+                } response;
+        } unit;
+} http_unit;
 
 http_method get_method(char *str);
 
-int parse_request(char *req, client_handle *handle, http_request *target);
+int parse_request(char *req, client_handle *handle, http_unit *target);
 
-void request_dealloc(http_request *request);
+http_header *request_find_header(http_unit *request, char *key);
 
-http_header *request_find_header(http_request *request, char *key);
+int simple_http_response(http_unit *target, unsigned int code, const char *msg);
 
-int simple_http_response(http_response *target, unsigned int code, const char *msg);
+int full_http_response(http_unit *target, unsigned int code, const char *msg, char *body, unsigned int body_length);
 
-int full_http_response(http_response *target, unsigned int code, const char *msg, char *body, unsigned int body_length);
+void unit_dealloc(http_unit *response);
 
-void response_dealloc(http_response *response);
+char *http_unit_string(http_unit *resp);
 
-char *http_response_string(http_response *resp);
-
-unsigned int http_response_length(http_response *resp);
+unsigned int http_response_length(http_unit *resp);
 
 #endif //KETAMINE_HTTP_H

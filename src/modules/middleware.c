@@ -26,10 +26,10 @@ char *resolve_route_override(char *src)
         return NULL;
 }
 
-int run_get_hook(http_request *req, http_response *resp)
+int run_get_hook(http_unit *req, http_unit *resp)
 {
         for (unsigned long i = 0; i < modules_count; i++) {
-                int (*get_hook)(http_request *, http_response *) = loaded_modules[i].get_hook;
+                int (*get_hook)(http_unit *, http_unit *) = loaded_modules[i].get_hook;
 
                 if (!get_hook) {
                         continue;
