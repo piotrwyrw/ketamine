@@ -20,16 +20,18 @@
 #include "threadsafe.h"
 #include "modules/middleware.h"
 
-// Respond to a HTTP GET request
+// Parse and respond to a HTTP request after calling GET hooks, resolving routes, including considering potential route
+// overrides from the modules. A lot of stuff in a single function. Will need to break this up at some point to make it
+// a bit more readable.
 request_status respond_get(int sockd, char *req, client_handle *handle)
 {
         if (!req || !handle) {
-                return ERR;
+                return RSTATUS_ERR;
         }
 
 #ifdef WITH_DEBUG_FEATURES
         if (strncmp(req, "close-server", 12) == 0) {
-                return EXIT;
+                return RSTATUS_EXIT;
         }
 #endif
 
@@ -39,7 +41,11 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         if (parse_request(req, handle, &request) < 0) {
                 CONNECTION_ERROR(handle, "Could not parse incoming request\n")
-                return ERR;
+                return RSTATUS_ERR;
+        }
+
+        if (request.unit.request.method != METHOD_GET) {
+                return RSTATUS_OK;
         }
 
         char *file = request.unit.request.path;
@@ -109,7 +115,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 unit_dealloc(&response);
                 free(response_str); // No it may not: It's only freed if (status < 0), which is also when the error handler gets triggered
 
-                return RESOURCE_UNAVAILABLE;
+                return RSTATUS_RESOURCE_UNAVAILABLE;
         }
 
         CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file)
@@ -130,11 +136,11 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         unit_dealloc(&response);
         free(response_str); // Again, it may NOT point to deallocated memory.
 
-        return GET_OK;
+        return RSTATUS_OK;
 
         return_error:
         unit_dealloc(&request);
-        return ERR;
+        return RSTATUS_ERR;
 }
 
 void *handle_client_connection(void *param)
@@ -147,7 +153,7 @@ void *handle_client_connection(void *param)
         CONNECTION_LOG(handle, "New connection established\n")
 
         ssize_t req_size;
-        handle->req = DEFAULT;
+        handle->req = RSTATUS_DEFAULT;
 
         receive_req:
         req_size = recv(client_socket, buffer, 1000, 0);
@@ -170,7 +176,7 @@ void *handle_client_connection(void *param)
         handle->req = respond_get(client_socket, buffer, handle);
 
 #ifdef WITH_DEBUG_FEATURES
-        if (handle->req == EXIT) {
+        if (handle->req == RSTATUS_EXIT) {
                 CONNECTION_LOG(handle, "Client requested server shutdown.\n")
         }
 #endif
@@ -182,7 +188,7 @@ void *handle_client_connection(void *param)
         free_connection(handle);
 
 #ifdef WITH_DEBUG_FEATURES
-        if (tmp_req == EXIT) {
+        if (tmp_req == RSTATUS_EXIT) {
                 request_server_shutdown();
         }
 #endif

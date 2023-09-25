@@ -12,7 +12,7 @@
         printf(__VA_ARGS__);
 
 #define ERROR_LOG(...) \
-        printf("[ERR] "); \
+        printf("[RSTATUS_ERR] "); \
         printf(__VA_ARGS__);
 
 #endif //KETAMINE_GPLOGGING_H

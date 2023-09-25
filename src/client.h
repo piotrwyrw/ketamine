@@ -6,13 +6,12 @@
 #define KETAMINE_CLIENT_H
 
 typedef enum {
-        DEFAULT,
-        RESOURCE_UNAVAILABLE,
+        RSTATUS_DEFAULT,
+        RSTATUS_RESOURCE_UNAVAILABLE,
 
-        GET_OK,
-        GET_ERR,
-        EXIT,
-        ERR = -1
+        RSTATUS_OK,
+        RSTATUS_EXIT,
+        RSTATUS_ERR = -1
 } request_status;
 
 

@@ -44,7 +44,7 @@ client_handle *new_connection(int sockd, struct sockaddr_in addr, socklen_t addr
         conn->file_buffer = NULL;
         conn->file_size = 0;
 
-        conn->req = DEFAULT;
+        conn->req = RSTATUS_DEFAULT;
 
         return conn;
 }
@@ -55,7 +55,7 @@ void free_connection(client_handle *conn)
                 return;
         }
 
-        if (conn->file_buffer && conn->req != RESOURCE_UNAVAILABLE) {
+        if (conn->file_buffer && conn->req != RSTATUS_RESOURCE_UNAVAILABLE) {
                 free(conn->file_buffer);
         }
 
