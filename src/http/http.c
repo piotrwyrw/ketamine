@@ -47,12 +47,6 @@ int parse_request(char *req, client_handle *handle, http_request *request)
         request->method = METHOD_INVALID;
         request->data = NULL;
 
-//        http_request request = {
-//                .header_count = 0,
-//                .method = METHOD_INVALID,
-//                .data = NULL
-//        };
-
         // Scan the request line-by-line
         next_line:
         line = strsep(&req, "\n\r");
@@ -146,6 +140,11 @@ int parse_request(char *req, client_handle *handle, http_request *request)
                 value++;
         }
 
+        if (request_find_header(request, key)) {
+                ERROR_LOG("Conflicting headers: The header \"%s\" was passed more than once.\n", key)
+                return -1;
+        }
+
         strncpy(request->headers[request->header_count].field, key, MAX_STRING_LENGTH);
         strncpy(request->headers[request->header_count].value, value, MAX_STRING_LENGTH);
         request->header_count++;
@@ -194,6 +193,23 @@ void request_dealloc(http_request *request)
         }
 
         free(request->data);
+}
+
+http_header *request_find_header(http_request *request, char *key)
+{
+        if (!request || !key) {
+                return NULL;
+        }
+
+        for (unsigned long i = 0; i < request->header_count; i++) {
+                http_header header = request->headers[i];
+
+                if (strncmp(header.field, key, MAX_STRING_LENGTH) == 0) {
+                        return &(request->headers[i]);
+                }
+        }
+
+        return NULL;
 }
 
 int simple_http_response(http_response *target, unsigned int code, const char *msg)

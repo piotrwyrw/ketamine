@@ -46,6 +46,8 @@ int parse_request(char *req, client_handle *handle, http_request *target);
 
 void request_dealloc(http_request *request);
 
+http_header *request_find_header(http_request *request, char *key);
+
 int simple_http_response(http_response *target, unsigned int code, const char *msg);
 
 int full_http_response(http_response *target, unsigned int code, const char *msg, char *body, unsigned int body_length);
