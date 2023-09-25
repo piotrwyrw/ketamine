@@ -213,6 +213,8 @@ int simple_http_response(http_unit *target, unsigned int code, const char *msg)
                 return -1;
         }
 
+        http_add_header(target, "Connection", "Closed");
+
         strncpy(target->unit.response.status_message, msg, MAX_STATUS_MESSAGE_LENGTH);
         target->unit.response.status_code = code;
 
@@ -251,6 +253,12 @@ int full_http_response(http_unit *target, unsigned int code, const char *msg, ch
         memcpy(target->data, body, body_length);
         target->data_length = body_length;
 
+        char buffer[100] = {0};
+        sprintf(buffer, "%ld", target->data_length);
+
+        http_add_header(target, "Connection", "Closed");
+        http_add_header(target, "Content-Length", buffer);
+
         return 0;
 }
 
@@ -285,23 +293,55 @@ char *http_unit_string(http_unit *resp)
                 return NULL;
         }
 
-        char *str;
+        // TODO Check the math below a couple of time more
+
+        // Please don't ask about the way I calculate the required memory here ... PS: Lots of guessing
+        char *str = calloc(
+                MAX_STATUS_MESSAGE_LENGTH + 50 + resp->data_length + ((2 * MAX_STRING_LENGTH) * resp->header_count),
+                sizeof(char));
+
+        sprintf(str, "HTTP/1.1 %d %s\r\n", resp->unit.response.status_code,
+                resp->unit.response.status_message);
+
+        unsigned long offset = strnlen(str, MAX_STATUS_MESSAGE_LENGTH + MAX_STRING_LENGTH);
+
+        for (unsigned long i = 0; i < resp->header_count; i++) {
+                http_header *header = &(resp->headers[i]);
+
+                sprintf(str + offset, "%s: %s\r\n", header->field, header->value);
+
+                offset = strnlen(str, (2 * MAX_STRING_LENGTH) * resp->header_count);
+        }
+
+        strncat(str + offset, "\r\n", 2);
+        offset += 2;
+
+        resp->unit.response.header_length = offset;
 
         if (resp->data && resp->data_length > 0) {
-                str = calloc(resp->data_length + MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
-                sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\nContent-Length: %ld\r\n\r\n",
-                        resp->unit.response.status_code,
-                        resp->unit.response.status_message, resp->data_length);
-                resp->unit.response.header_length = strnlen(str, MAX_STRING_LENGTH);
                 memcpy(str + resp->unit.response.header_length, resp->data, resp->data_length);
                 return str;
         }
 
-        str = calloc(MAX_STATUS_MESSAGE_LENGTH + 50, sizeof(char));
-        sprintf(str, "HTTP/1.1 %d %s\r\nConnection: Closed\r\n\r\n", resp->unit.response.status_code,
-                resp->unit.response.status_message);
-        resp->unit.response.header_length = strnlen(str, MAX_STRING_LENGTH);
         return str;
+}
+
+int http_add_header(http_unit *target, char *field, char *value)
+{
+        if (!target || !field || !value) {
+                return -1;
+        }
+
+        if (request_find_header(target, field)) {
+                ERROR_LOG("Conflicting headers: The header \"%s\" occurred more than once.\n", field)
+                return -1;
+        }
+
+        strncpy(target->headers[target->header_count].field, field, MAX_STRING_LENGTH);
+        strncpy(target->headers[target->header_count].value, value, MAX_STRING_LENGTH);
+        target->header_count++;
+
+        return 0;
 }
 
 unsigned int http_response_length(http_unit *resp)
@@ -311,7 +351,7 @@ unsigned int http_response_length(http_unit *resp)
         }
 
         if (resp->type != UNIT_RESPONSE) {
-                return -1;
+                return 0;
         }
 
         return resp->data_length + resp->unit.response.header_length;
