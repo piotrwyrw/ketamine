@@ -13,9 +13,9 @@
 dynamic_module loaded_modules[MAX_DYNAMIC_MODULES];
 unsigned long modules_count = 0;
 
-int load_module(char *name, char *path)
+int load_module(char *path)
 {
-        if (!name || !path) {
+        if (!path) {
                 return -1;
         }
 
@@ -27,20 +27,20 @@ int load_module(char *name, char *path)
         void *handle = dlopen(path, RTLD_NOW | RTLD_LOCAL);
 
         if (!handle) {
-                ERROR_LOG("Failed to load dynamic module \"%s\" at \"%s\": %s\n", name, path, dlerror())
+                ERROR_LOG("Failed to load dynamic module \"%s\" : %s\n", path, dlerror())
                 return -1;
         }
 
         dynamic_module *mod = &(loaded_modules[modules_count]);
         mod->handle = handle;
-        strncpy(mod->import_name, name, MAX_STRING_LENGTH);
+        strncpy(mod->path, path, MAX_STRING_LENGTH);
 
         if (load_module_symbols(mod) < 0) {
-                ERROR_LOG("Failed to load module \"%s\" (%s)\n", name, path)
+                ERROR_LOG("Failed to load module \"%s\"\n", path)
                 return -1;
         }
 
-        INFO_LOG("Module loaded: %s (%s)\n", name, path)
+        INFO_LOG("Module loaded: \"%s\"\n", path)
 
         modules_count++;
 
@@ -110,9 +110,9 @@ void modules_unload_all()
                 }
 
                 if (dlclose(mod->handle) == 0) {
-                        INFO_LOG("Unloaded module \"%s\"\n", mod->import_name)
+                        INFO_LOG("Unloaded module \"%s\"\n", mod->path)
                 } else {
-                        ERROR_LOG("Could not unload module \"%s\": %s\n", mod->import_name, dlerror())
+                        ERROR_LOG("Could not unload module \"%s\": %s\n", mod->path, dlerror())
                 }
         }
 

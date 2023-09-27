@@ -12,6 +12,7 @@
 
 #define INDEX_FILE_NAME "index.html"
 #define ROUTES_FILE_NAME "routes"
+#define MODULES_FILE_NAME "modules"
 #define LISTEN_PORT 80
 
 #define MAX_STATUS_MESSAGE_LENGTH 50

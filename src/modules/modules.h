@@ -9,7 +9,8 @@
 #include "../http/http.h"
 
 typedef struct {
-        char import_name[MAX_STRING_LENGTH];
+        char path[MAX_STRING_LENGTH];
+
         void *handle;
 
         void (*init)();
@@ -22,7 +23,7 @@ typedef struct {
 extern dynamic_module loaded_modules[];
 extern unsigned long modules_count;
 
-int load_module(char *name, char *path);
+int load_module(char *path);
 
 int load_module_symbols(dynamic_module *module);
 
