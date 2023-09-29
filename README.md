@@ -1,9 +1,5 @@
 # Ketamine
 
-<br>
-
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Ketamine.svg/580px-Ketamine.svg.png" style="width: 20%; filter: invert(); margin-right: 30px;">
-
 A very simple HTTP server that you _probably_ shouldn't use because of security of whatever. It was written in the C
 programming langauge,
 which besides being my favourite, is also known for being quite easy to mess up terribly, especially when it comes
