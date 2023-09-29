@@ -14,8 +14,6 @@ typedef enum {
         RSTATUS_ERR = -1
 } request_status;
 
-
-
 void *handle_client_connection(void *param);
 
 #endif //KETAMINE_CLIENT_H
