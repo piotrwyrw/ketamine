@@ -18,7 +18,7 @@ RouteMapping(Greeting, req, resp)
 RouteMapping(Default, req, resp)
 {
         char *message = "Nothing interesting here.";
-        full_http_response(resp, 200, "RSTATUS_ERR", message, strnlen(message, MAX_STRING_LENGTH));
+        full_http_response(resp, 200, "ERR", message, strnlen(message, MAX_STRING_LENGTH));
         return 0;
 }
 

@@ -33,11 +33,15 @@ set(KETAMINE_SOURCES src/main.c
         sdk/sdk.h
         sdk/logging.h
         src/parse.h
-        src/parse.c)
-
-add_executable(ketamine ${KETAMINE_SOURCES}
+        src/parse.c
         src/modules/cfgmodule.h
-        src/modules/cfgmodule.c)
+        src/modules/cfgmodule.c
+        src/cli.h
+        src/cli.c
+)
+
+# Build the ketamine server excutable
+add_executable(ketamine ${KETAMINE_SOURCES})
 
 add_library(libketamine STATIC ${KETAMINE_SOURCES})
 set_target_properties(libketamine PROPERTIES OUTPUT_NAME "libketamine" PREFIX "")

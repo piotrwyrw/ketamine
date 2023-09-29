@@ -74,7 +74,7 @@ int config_server()
 
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(LISTEN_PORT);
+        addr.sin_port = htons(listen_port);
         addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
         status = bind(server_sockd, (struct sockaddr *) &addr, sizeof(struct sockaddr_in));
@@ -104,7 +104,7 @@ int run_server()
         status = pthread_mutex_init(&global_mutex, NULL);
         HANDLE_ERRORS("pthread_mutex_init", status)
 
-        INFO_LOG("Server is UP AND RUNNING on http://localhost:%d\n\n", LISTEN_PORT)
+        INFO_LOG("Server is up and awaiting incoming connections on http://localhost:%d\n\n", listen_port)
 
         while (true) {
                 if (!is_running()) {

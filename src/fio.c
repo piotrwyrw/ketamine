@@ -24,6 +24,7 @@ int read_file_to(char *path, char **buffer, unsigned long *length)
         long len = ftell(f);
 
         if (len <= 0) {
+                fclose(f);
                 return -1;
         }
 
@@ -44,7 +45,7 @@ int read_file_to(char *path, char **buffer, unsigned long *length)
 
         *length = len;
 
-        rewind(f);
+        fclose(f);
 
         return 0;
 }

@@ -18,7 +18,7 @@ int load_routes_file(char *path)
                 return -1;
         }
 
-        char *base_buffer; // Warning: This is a loaded_modules buffer - will need explicit free()-ing
+        char *base_buffer; // Warning: This is a dynamically allocated buffer - will need explicit free()-ing
         char *buffer;
         unsigned long length;
 
@@ -63,7 +63,7 @@ int load_routes_file(char *path)
                 }
         }
 
-        INFO_LOG("Done reading routes file.\n")
+        INFO_LOG("~~ Done reading routes file ~~\n")
 
         free(base_buffer);
         return 0;

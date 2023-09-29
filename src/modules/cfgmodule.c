@@ -36,13 +36,7 @@ int load_modules_file(char *path)
         // Loop through all lines
         while ((line = strsep(&buffer, "\n"))) {
 
-                char *module_path;
-
-                if (!(module_path = strsep(&line, ":"))) {
-                        ERROR_LOG("Failed while parsing modules: Could not get module path)\n")
-                        free(base_buffer);
-                        return -1;
-                }
+                char *module_path = line;
 
                 int route_status = load_module(module_path);
 
@@ -52,7 +46,7 @@ int load_modules_file(char *path)
                 }
         }
 
-        INFO_LOG("Done reading modules file.\n")
+        INFO_LOG("~~ Done reading modules file ~~\n")
 
         free(base_buffer);
         return 0;

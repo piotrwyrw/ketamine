@@ -160,7 +160,7 @@ int parse_request(char *req, client_handle *handle, http_unit *request)
 
         remove_leading_spaces(&req);
 
-        request->data_length = strtoul(value, NULL, 10);
+        request->data_length = strtoul(value, NULL, 0);
 
         if (request->data_length == ULONG_MAX && (errno == ERANGE || errno == EINVAL)) {
                 ERROR_LOG("Could not parse value of 'Content-Length' header as unsigned long.\n")
