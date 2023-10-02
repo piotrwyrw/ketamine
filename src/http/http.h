@@ -66,7 +66,7 @@ int full_http_response(http_unit *target, unsigned int code, const char *msg, ch
 
 void unit_dealloc(http_unit *response);
 
-char *http_unit_string(http_unit *resp);
+char *http_response_string(http_unit *resp);
 
 int http_add_header(http_unit *target, char *field, char *value);
 

@@ -35,22 +35,27 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         }
 #endif
 
+        request_status exit_code = RSTATUS_DEFAULT;
         http_unit request = {.type = UNIT_REQUEST};
         http_unit response = {.type = UNIT_RESPONSE};
         char *response_str;
 
+        // Parse the incoming request, store output in `request`
         if (parse_request(req, handle, &request) < 0) {
                 CONNECTION_ERROR(handle, "Could not parse incoming request\n")
                 return RSTATUS_ERR;
         }
 
+        // We cannot respond to anything that is not a GET request
         if (request.unit.request.method != METHOD_GET) {
                 return RSTATUS_OK;
         }
 
+        // Data needed to respond to a GET: Target path name, length of the path string
         char *file = request.unit.request.path;
         size_t file_len;
 
+        // If the target path is empty, there's not much we can do
         if ((file_len = strnlen(file, MAX_STRING_LENGTH)) == 0) {
                 CONNECTION_ERROR(handle, "An error occurred while parsing the request\n")
                 goto return_error;
@@ -65,13 +70,10 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
         }
 
         // Run the modular middleware
-        if (run_get_hook(&request, &response) < 0) {
-                goto continue_regular_flow;
+        if (run_get_hook(&request, &response) == 0) {
+                exit_code = RSTATUS_OK;
+                goto send_and_close;
         }
-
-        goto send_and_close;
-
-        continue_regular_flow:
 
         // Special cases if no routes were resolved
         if (!route_target) {
@@ -88,6 +90,7 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
 
         }
 
+        // Prefix the file with a root directory (if it needs prefixing)
         char prefixed_file[MAX_STRING_LENGTH] = {0};
 
         if (route_directory_set) {
@@ -95,48 +98,37 @@ request_status respond_get(int sockd, char *req, client_handle *handle)
                 file = prefixed_file;
         }
 
+        // Read the requested file
         int status = read_file(file, handle);
+
+        /* Case a) Reading did not succeed */
         if (status < 0) {
                 CONNECTION_LOG(handle, "GET \"%s\" -> Resource unavailable\n", file)
 
+                // Respond with a simple 404 "NOT_FOUND" HTTP response
                 simple_http_response(&response, 404, "NOT_FOUND");
-                response_str = http_unit_string(&response);
-
-                status = send(sockd, response_str, http_response_length(&response), 0) >= 0 ? 0 : -1;
-                if (status < 0) {
-                        unit_dealloc(&request);
-                        unit_dealloc(&response);
-                        free(response_str);
-                }
-
-                HANDLE_ERRORS("send(404)", status)
-
-                unit_dealloc(&request);
-                unit_dealloc(&response);
-                free(response_str); // No it may not: It's only freed if (status < 0), which is also when the error handler gets triggered
-
-                return RSTATUS_RESOURCE_UNAVAILABLE;
+                goto send_and_close;
         }
+
+        /* Case b) The file was read properly */
 
         CONNECTION_LOG(handle, "GET \"%s\" -> Resource found\n", file)
 
+        // Respond with the contents of the requested file
         full_http_response(&response, 200, "OK", handle->file_buffer, handle->file_size);
 
         send_and_close:
-        response_str = http_unit_string(&response);
+        response_str = http_response_string(&response);
         status = send(sockd, response_str, http_response_length(&response), 0) >= 0 ? 0 : -1;
-        if (status < 0) {
-                unit_dealloc(&request);
-                unit_dealloc(&response);
-                free(response_str);
-        }
+
         HANDLE_ERRORS("send", status)
 
+        free_resources:
         unit_dealloc(&request);
         unit_dealloc(&response);
-        free(response_str); // Again, it may NOT point to deallocated memory.
+        free(response_str);
 
-        return RSTATUS_OK;
+        return exit_code;
 
         return_error:
         unit_dealloc(&request);

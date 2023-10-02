@@ -279,7 +279,7 @@ void unit_dealloc(http_unit *response)
  * @param resp
  * @return A dynamically allocated HTTP response string or <b>NULL</b> if something were to go wrong
  */
-char *http_unit_string(http_unit *resp)
+char *http_response_string(http_unit *resp)
 {
         if (!resp) {
                 return NULL;

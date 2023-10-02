@@ -13,6 +13,11 @@
                 return -1; \
         }
 
+#define HANDLE_ERRORS_NORETURN(tag, err) \
+        if ((err) < 0) {   \
+                printf("[Error(%s)]: %s\n", tag, strerror(errno));            \
+        }
+
 #define CONNECTION_ERROR(conn, ...) \
         printf("[ERR: %s | %d] ", conn->ip_addr, conn->conn_id);                      \
         printf(__VA_ARGS__);
